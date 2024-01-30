@@ -5,6 +5,7 @@ using Saf_T_Child_API_1.Services;
 
 namespace Saf_T_Child_API_1.Controllers
 {
+    [Route("api/user")]
     public class UserController: Controller
     {
         private readonly MongoDBService _mongoDBService;
