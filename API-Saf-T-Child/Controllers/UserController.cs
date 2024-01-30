@@ -5,7 +5,7 @@ using Saf_T_Child_API_1.Services;
 
 namespace Saf_T_Child_API_1.Controllers
 {
-    public class UserController: Controller
+    public class UserController: ControllerBase
     {
         private readonly MongoDBService _mongoDBService;
 
@@ -14,7 +14,7 @@ namespace Saf_T_Child_API_1.Controllers
             _mongoDBService = mongoDBService;
         }
 
-        [HttpGet]
+        [HttpGet("test")]
         public async Task<ActionResult<IEnumerable<User>>> Get()
         {
             var users = await _mongoDBService.GetUsersAsync();
