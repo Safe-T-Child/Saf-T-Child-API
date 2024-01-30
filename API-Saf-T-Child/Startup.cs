@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Saf_T_Child_API_1.Models;
+using Saf_T_Child_API_1.Services;
 
 namespace Saf_T_Child_API_1
 {
@@ -17,7 +19,11 @@ namespace Saf_T_Child_API_1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<MongoDBSettings>(
+                Configuration.GetSection("MongoDB"));
+            
             // Configure services here
+            services.AddSingleton<MongoDBService>();
             services.AddControllers(); // Add MVC services
             services.AddAuthorization(); // Add authorization services
             // Add other services as needed
