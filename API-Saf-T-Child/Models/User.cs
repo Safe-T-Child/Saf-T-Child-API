@@ -10,6 +10,12 @@ namespace Saf_T_Child_API_1.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
 
+        [BsonElement("userType")]
+        public string? UserType { get; set; }
+
+        [BsonElement("username")]
+        public string? UserName { get; set; }
+
         [BsonElement("firstName")]
         public string? FirstName { get; set; }
 
@@ -20,10 +26,10 @@ namespace Saf_T_Child_API_1.Models
         public List<String>? Email { get; set; }
 
         [BsonElement("primaryPhoneNumber")]
-        public int? PrimaryPhone { get; set; }
+        public string? PrimaryPhone { get; set; }
 
         [BsonElement("secondaryPhoneNumbers")]
-        public List<int>? SecondaryNumbers { get; set; }
+        public List<string>? SecondaryNumbers { get; set; }
 
     }
 }
