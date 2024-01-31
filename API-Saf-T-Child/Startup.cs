@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Saf_T_Child_API_1.Models;
 using Saf_T_Child_API_1.Services;
 
@@ -19,14 +20,15 @@ namespace Saf_T_Child_API_1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<MongoDBSettings>(
-                Configuration.GetSection("MongoDB"));
-            
+            // Configure MongoDBSettings and bind it to the MongoDBSettings class
+            services.Configure<MongoDBSettings>(Configuration.GetSection("MongoDB"));
+
             // Configure services here
-            services.AddSingleton<MongoDBService>();
-            services.AddControllers(); // Add MVC services
+            services.AddMvc().AddControllersAsServices(); // Add MVC services
             services.AddAuthorization(); // Add authorization services
-            // Add other services as needed
+
+            // Inject IOptions<MongoDBSettings> into MongoDBService constructor
+            services.AddSingleton<MongoDBService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -34,6 +36,8 @@ namespace Saf_T_Child_API_1
         {
             if (env.IsDevelopment())
             {
+                app.UseSwagger();
+                app.UseSwaggerUI();
                 app.UseDeveloperExceptionPage();
             }
             else

@@ -1,8 +1,6 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text.RegularExpressions;
 
 namespace Saf_T_Child_API_1.Models
 {
@@ -12,27 +10,24 @@ namespace Saf_T_Child_API_1.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        //These Bsonelements are the fields that will be stored in the database
-        //Since in mongoDB the fields are case sensitive, we need to make sure that the fields are the same as the ones in the database
-        //Camel case is used for the fields in the database
         [BsonElement("userType")]
         [Required]
-        public string UserType { get; set; }
+        public string? UserType { get; set; }
 
         [BsonElement("username")]
-        public string Username { get; set; }
+        public string UserName { get; set; }
 
         [BsonElement("firstName")]
         [Required]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
         [BsonElement("lastName")]
         [Required]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
         [BsonElement("email")]
         [Required]
-        public List<string> Email { get; set; }
+        public List<String>? Email { get; set; }
 
         [BsonElement("primaryPhoneNumber")]
         [Required]
@@ -53,5 +48,6 @@ namespace Saf_T_Child_API_1.Models
             [Required]
             public string PhoneNumberValue { get; set; }
         }
+
     }
 }

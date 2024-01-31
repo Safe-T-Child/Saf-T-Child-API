@@ -1,11 +1,12 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Mvc;
 using Saf_T_Child_API_1.Models;
 using Saf_T_Child_API_1.Services;
 
 namespace Saf_T_Child_API_1.Controllers
 {
-    public class UserController: ControllerBase
+    [Route("api/user")]
+    public class UserController: Controller
     {
         private readonly MongoDBService _mongoDBService;
 
@@ -14,7 +15,7 @@ namespace Saf_T_Child_API_1.Controllers
             _mongoDBService = mongoDBService;
         }
 
-        [HttpGet("test")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> Get()
         {
             var users = await _mongoDBService.GetUsersAsync();

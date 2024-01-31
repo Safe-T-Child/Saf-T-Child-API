@@ -1,23 +1,17 @@
-using Saf_T_Child_API_1.Services;
-using Saf_T_Child_API_1.Models;
+using Saf_T_Child_API_1;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add MongoDBSettings configuration
-builder.Services.Configure<MongoDBSettings>(
-    builder.Configuration.GetSection("MongoDB"));
-
-// Add MongoDBService
-builder.Services.AddSingleton<MongoDBService>();
-
-// Add services to the container
+var startup = new Startup(builder.Configuration);
+startup.ConfigureServices(builder.Services); // calling ConfigureServices method
 builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
+startup.Configure(app, builder.Environment); // calling Configure method
 
-// Configure the HTTP request pipeline
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -25,6 +19,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();
