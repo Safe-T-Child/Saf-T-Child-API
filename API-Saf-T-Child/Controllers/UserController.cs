@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Mvc;
 using Saf_T_Child_API_1.Models;
 using Saf_T_Child_API_1.Services;
