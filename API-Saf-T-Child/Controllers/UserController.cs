@@ -8,8 +8,10 @@ namespace Saf_T_Child_API_1.Controllers
     [Route("api/user")]
     public class UserController: Controller
     {
+        // Private field representing an instance of the MongoDBService class, which will be used to interact with the MongoDB database.
         private readonly MongoDBService _mongoDBService;
 
+        // This constructor injects an instance of MongoDBService into the controller.
         public UserController(MongoDBService mongoDBService)
         {
             _mongoDBService = mongoDBService;
