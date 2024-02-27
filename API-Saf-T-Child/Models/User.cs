@@ -10,13 +10,6 @@ namespace Saf_T_Child_API_1.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        [BsonElement("userType")]
-        [Required]
-        public string? UserType { get; set; }
-
-        [BsonElement("username")]
-        public string UserName { get; set; }
-
         [BsonElement("firstName")]
         [Required]
         public string? FirstName { get; set; }
@@ -24,6 +17,9 @@ namespace Saf_T_Child_API_1.Models
         [BsonElement("lastName")]
         [Required]
         public string? LastName { get; set; }
+
+        [BsonElement("username")]
+        public string UserName { get; set; }
 
         [BsonElement("email")]
         [Required]
