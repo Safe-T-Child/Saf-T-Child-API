@@ -17,8 +17,8 @@ namespace API_Saf_T_Child.Controllers
             _mongoDBService = mongoDBService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> Get()
+        [HttpGet("Get")]
+        public async Task<ActionResult<IEnumerable<Group>>> Get()
         {
             var users = await _mongoDBService.GetGroupAsync();
             return Ok(users);

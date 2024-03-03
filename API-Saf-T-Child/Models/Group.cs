@@ -14,9 +14,9 @@ namespace API_Saf_T_Child.Models
         public string Name { get; set; }
 
         [BsonElement("owner")]
-        public User Owner { get; set; }
+        public NamedDocumentKey Owner { get; set; }
 
         [BsonElement("users")]
-        public List<User> Users { get; set; }
+        public List<NamedDocumentKey> Users { get; set; }
     }
 }

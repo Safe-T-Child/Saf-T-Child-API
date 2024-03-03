@@ -30,7 +30,7 @@ namespace API_Saf_T_Child.Models
         public string Status { get; set; }
 
         [BsonElement("deviceOwner")]
-        public User Owner { get; set; }
+        public NamedDocumentKey Owner { get; set; }
 
         [BsonElement("deviceGroup")]
         public int GroupID { get; set; }
