@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using Saf_T_Child_API_1.Models;
+using API_Saf_T_Child.Models;
 
 namespace API_Saf_T_Child.Models
 {
@@ -14,7 +14,7 @@ namespace API_Saf_T_Child.Models
         public string Name { get; set; }
 
         [BsonElement("owner")]
-        public User owner { get; set; }
+        public User Owner { get; set; }
 
         [BsonElement("users")]
         public List<User> Users { get; set; }

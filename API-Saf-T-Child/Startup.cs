@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Saf_T_Child_API_1.Models;
-using Saf_T_Child_API_1.Services;
+using API_Saf_T_Child.Models;
+using API_Saf_T_Child.Services;
 
-namespace Saf_T_Child_API_1
+namespace API_Saf_T_Child
 {
     public class Startup
     {

@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.Text.Json.Serialization;
-using Saf_T_Child_API_1.Models;
+using API_Saf_T_Child.Models;
 
 namespace API_Saf_T_Child.Models
 {
