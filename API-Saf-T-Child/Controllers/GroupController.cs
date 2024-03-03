@@ -20,8 +20,8 @@ namespace API_Saf_T_Child.Controllers
         [HttpGet("Get")]
         public async Task<ActionResult<IEnumerable<Group>>> Get()
         {
-            var users = await _mongoDBService.GetGroupAsync();
-            return Ok(users);
+            var group = await _mongoDBService.GetGroupAsync();
+            return Ok(group);
         }
 
         [HttpPost]

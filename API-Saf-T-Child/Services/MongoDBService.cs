@@ -18,9 +18,9 @@ namespace API_Saf_T_Child.Services
         {
             MongoClient client = new MongoClient(mongoDBSettings.Value.ConnectionURI);
             IMongoDatabase database = client.GetDatabase(mongoDBSettings.Value.DatabaseName);
-            _userCollection = database.GetCollection<User>(mongoDBSettings.Value.CollectionName);
-            _groupCollection = database.GetCollection<Group>(mongoDBSettings.Value.CollectionName);
-            _deviceCollection = database.GetCollection<Device>(mongoDBSettings.Value.CollectionName);
+            _userCollection = database.GetCollection<User>(mongoDBSettings.Value.Collection1);
+            _groupCollection = database.GetCollection<Group>(mongoDBSettings.Value.Collection3);
+            _deviceCollection = database.GetCollection<Device>(mongoDBSettings.Value.Collection4);
         }
 
         // Get
