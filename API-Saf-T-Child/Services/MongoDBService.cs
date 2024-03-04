@@ -30,16 +30,46 @@ namespace API_Saf_T_Child.Services
             return users;
         }
 
-        public async Task<List<Group>> GetGroupAsync()
+        public async Task<User> GetUserByIdAsync(string id)
+        {
+            var objectId = new ObjectId(id); // Convert string ID to ObjectId
+
+            var filter = Builders<User>.Filter.Eq("_id", objectId); // Filter by group ID
+            var user = await _userCollection.Find(filter).FirstOrDefaultAsync();
+
+            return user;
+        }
+
+        public async Task<List<Group>> GetAllGroupsAsync()
         {
             var groups = await _groupCollection.Find(_ => true).ToListAsync();
             return groups;
         }
 
-        public async Task<List<Device>> GetDeviceAsync()
+        public async Task<Group> GetGroupByIdAsync(string id)
+        {
+            var objectId = new ObjectId(id); // Convert string ID to ObjectId
+
+            var filter = Builders<Group>.Filter.Eq("_id", objectId); // Filter by group ID
+            var group = await _groupCollection.Find(filter).FirstOrDefaultAsync();
+
+            return group;
+        }
+
+        public async Task<List<Device>> GetAllDevicesAsync()
         {
             var devices = await _deviceCollection.Find(_ => true).ToListAsync();
             return devices;
+        }
+
+        public async Task<Device> GetDeviceByIdAsync(string id)
+        {
+            var objectId = new ObjectId(id); // Convert string ID to ObjectId
+
+            var filter = Builders<Device>.Filter.Eq("_id", objectId); // Filter by group ID
+            var device = await _deviceCollection.Find(filter).FirstOrDefaultAsync();
+
+            return device;
         }
 
         //Insert

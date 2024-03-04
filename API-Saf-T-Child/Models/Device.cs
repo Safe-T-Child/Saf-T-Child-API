@@ -24,7 +24,7 @@ namespace API_Saf_T_Child.Models
         public string DeviceId { get; set; }
 
         [BsonElement("car")]
-        public string Car { get; set; }
+        public NamedDocumentKey Car { get; set; }
 
         [BsonElement("deviceStatus")]
         public string Status { get; set; }
@@ -33,6 +33,6 @@ namespace API_Saf_T_Child.Models
         public NamedDocumentKey Owner { get; set; }
 
         [BsonElement("deviceGroup")]
-        public int GroupID { get; set; }
+        public NamedDocumentKey GroupID { get; set; }
     }
 }

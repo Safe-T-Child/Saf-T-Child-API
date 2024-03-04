@@ -17,12 +17,26 @@ namespace API_Saf_T_Child.Controllers
             _mongoDBService = mongoDBService;
         }
 
-        [HttpGet("Get")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<Group>>> Get()
         {
-            var group = await _mongoDBService.GetGroupAsync();
+            var group = await _mongoDBService.GetAllGroupsAsync();
             return Ok(group);
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Group>> Get(string id)
+        {
+            var group = await _mongoDBService.GetGroupByIdAsync(id);
+
+            if (group == null)
+            {
+                return NotFound(); // Return 404 Not Found if the group with the specified ID is not found
+            }
+
+            return Ok(group);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Group group)

@@ -24,6 +24,13 @@ namespace API_Saf_T_Child.Controllers
             return Ok(users);
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<IEnumerable<User>>> Get(string id)
+        {
+            var users = await _mongoDBService.GetUserByIdAsync(id);
+            return Ok(users);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] User user)
         {

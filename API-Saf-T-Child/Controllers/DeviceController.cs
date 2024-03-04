@@ -20,7 +20,14 @@ namespace API_Saf_T_Child.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Device>>> Get()
         {
-            var devices = await _mongoDBService.GetDeviceAsync();
+            var devices = await _mongoDBService.GetAllDevicesAsync();
+            return Ok(devices);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<IEnumerable<Device>>> Get(string id)
+        {
+            var devices = await _mongoDBService.GetDeviceByIdAsync(id);
             return Ok(devices);
         }
 
