@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.Text.Json.Serialization;
-using Saf_T_Child_API_1.Models;
+using API_Saf_T_Child.Models;
 
 namespace API_Saf_T_Child.Models
 {
@@ -24,15 +24,15 @@ namespace API_Saf_T_Child.Models
         public string DeviceId { get; set; }
 
         [BsonElement("car")]
-        public string Car { get; set; }
+        public NamedDocumentKey Car { get; set; }
 
         [BsonElement("deviceStatus")]
         public string Status { get; set; }
 
         [BsonElement("deviceOwner")]
-        public User Owner { get; set; }
+        public NamedDocumentKey Owner { get; set; }
 
         [BsonElement("deviceGroup")]
-        public int GroupID { get; set; }
+        public NamedDocumentKey GroupID { get; set; }
     }
 }

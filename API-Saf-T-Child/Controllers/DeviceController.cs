@@ -1,51 +1,51 @@
-using System;
+﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using API_Saf_T_Child.Models;
 using API_Saf_T_Child.Services;
 
 namespace API_Saf_T_Child.Controllers
 {
-    [Route("api/user")]
-    public class UserController: Controller
+    [Route("api/device")]
+    public class DeviceController : Controller
     {
         // Private field representing an instance of the MongoDBService class, which will be used to interact with the MongoDB database.
         private readonly MongoDBService _mongoDBService;
 
         // This constructor injects an instance of MongoDBService into the controller.
-        public UserController(MongoDBService mongoDBService)
+        public DeviceController(MongoDBService mongoDBService)
         {
             _mongoDBService = mongoDBService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> Get()
+        public async Task<ActionResult<IEnumerable<Device>>> Get()
         {
-            var users = await _mongoDBService.GetUsersAsync();
-            return Ok(users);
+            var devices = await _mongoDBService.GetAllDevicesAsync();
+            return Ok(devices);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<IEnumerable<User>>> Get(string id)
+        public async Task<ActionResult<IEnumerable<Device>>> Get(string id)
         {
-            var users = await _mongoDBService.GetUserByIdAsync(id);
-            return Ok(users);
+            var devices = await _mongoDBService.GetDeviceByIdAsync(id);
+            return Ok(devices);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] User user)
+        public async Task<IActionResult> Post([FromBody] Device device)
         {
-            await _mongoDBService.InsertUserAsync(user);
-            return Ok(user);
+            await _mongoDBService.InsertDeviceAsync(device);
+            return Ok(device);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(string id, [FromBody] User user)
+        public async Task<IActionResult> UpdateDevice(string id, [FromBody] Device device)
         {
-            var result = await _mongoDBService.UpdateUserAsync(id, user);
+            var result = await _mongoDBService.UpdateDeviceAsync(id, device);
 
             if (result)
             {
-                return Ok(user);
+                return Ok(device);
             }
             else
             {
@@ -56,7 +56,7 @@ namespace API_Saf_T_Child.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var result = await _mongoDBService.DeleteUserAsync(id);
+            var result = await _mongoDBService.DeleteDeviceAsync(id);
 
             if (result)
             {

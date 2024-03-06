@@ -1,51 +1,58 @@
-using System;
+﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using API_Saf_T_Child.Models;
 using API_Saf_T_Child.Services;
 
 namespace API_Saf_T_Child.Controllers
 {
-    [Route("api/user")]
-    public class UserController: Controller
+    [Route("api/group")]
+    public class GroupController : Controller
     {
         // Private field representing an instance of the MongoDBService class, which will be used to interact with the MongoDB database.
         private readonly MongoDBService _mongoDBService;
 
         // This constructor injects an instance of MongoDBService into the controller.
-        public UserController(MongoDBService mongoDBService)
+        public GroupController(MongoDBService mongoDBService)
         {
             _mongoDBService = mongoDBService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> Get()
+        public async Task<ActionResult<IEnumerable<Group>>> Get()
         {
-            var users = await _mongoDBService.GetUsersAsync();
-            return Ok(users);
+            var group = await _mongoDBService.GetAllGroupsAsync();
+            return Ok(group);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<IEnumerable<User>>> Get(string id)
+        public async Task<ActionResult<Group>> Get(string id)
         {
-            var users = await _mongoDBService.GetUserByIdAsync(id);
-            return Ok(users);
+            var group = await _mongoDBService.GetGroupByIdAsync(id);
+
+            if (group == null)
+            {
+                return NotFound(); // Return 404 Not Found if the group with the specified ID is not found
+            }
+
+            return Ok(group);
         }
 
+
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] User user)
+        public async Task<IActionResult> Post([FromBody] Group group)
         {
-            await _mongoDBService.InsertUserAsync(user);
-            return Ok(user);
+            await _mongoDBService.InsertGroupAsync(group);
+            return Ok(group);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(string id, [FromBody] User user)
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] Group group)
         {
-            var result = await _mongoDBService.UpdateUserAsync(id, user);
+            var result = await _mongoDBService.UpdateGroupAsync(id, group);
 
             if (result)
             {
-                return Ok(user);
+                return Ok(group);
             }
             else
             {
@@ -56,7 +63,7 @@ namespace API_Saf_T_Child.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var result = await _mongoDBService.DeleteUserAsync(id);
+            var result = await _mongoDBService.DeleteGroupAsync(id);
 
             if (result)
             {

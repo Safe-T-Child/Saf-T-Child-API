@@ -4,7 +4,7 @@ using API_Saf_T_Child.Models;
 
 namespace API_Saf_T_Child.Models
 {
-    public class Group
+    public class NamedDocumentKey
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -13,10 +13,7 @@ namespace API_Saf_T_Child.Models
         [BsonElement("name")]
         public string Name { get; set; }
 
-        [BsonElement("owner")]
-        public NamedDocumentKey Owner { get; set; }
-
-        [BsonElement("users")]
-        public List<NamedDocumentKey> Users { get; set; }
+        [BsonElement("role")]
+        public string Role { get; set; }
     }
 }
