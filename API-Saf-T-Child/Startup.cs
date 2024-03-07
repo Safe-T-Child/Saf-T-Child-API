@@ -47,6 +47,9 @@ namespace API_Saf_T_Child
             }
 
             app.UseHttpsRedirection();
+            
+            app.UseCors("AllowAll");
+            
             app.UseRouting();
 
             // Add authorization middleware
