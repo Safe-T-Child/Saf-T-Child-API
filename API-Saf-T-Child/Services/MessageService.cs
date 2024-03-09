@@ -18,6 +18,9 @@ namespace API_Saf_T_Child.Services
 
         public async Task<bool> SendEmail(string to, string subject, string body)
         {
+            var message = new MailMessage(_mailSettings.Username, to, subject, body);
+            message.IsBodyHtml = true;
+
             SmtpClient gmailer = new SmtpClient {
                     Host = _mailSettings.Host,
                     Port = _mailSettings.Port,
@@ -26,8 +29,6 @@ namespace API_Saf_T_Child.Services
                     Credentials = new System.Net.NetworkCredential(_mailSettings.Username, _mailSettings.Password)
                 };
 
-            var message = new MailMessage(_mailSettings.Username, to, subject, body);
-            message.IsBodyHtml = true;
             try
             {
                 await gmailer.SendMailAsync(message);

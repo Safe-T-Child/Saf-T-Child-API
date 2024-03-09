@@ -72,9 +72,11 @@ namespace API_Saf_T_Child.Controllers
             if(user != null && user.Email != null && id != null)
             {
                 string linkUrl = "http://localhost:4200/api/validation/verifyEmailAddress/" + id;
-                string body = "<p align=\"center\"> Thank you for signing up for Saf - T - Child! </ br > Please click the link below to verify your email! </ br > < a href = \"" + linkUrl + "\" > Verify your Email </ a > </p>";
-                bool success = await _messageService.SendEmail(user.Email, "Verify your Saf-T-Child Email", body);
-                if(success)
+                string body = "<p align= 'center'>Thank You for singing up for Saf-T-Child! </br> " + 
+                                "Click the link below to verify your email: </br> " + 
+                                " <a href='" + linkUrl + "'>Verify your Email</a></p>";
+                bool success = await _messageService.SendEmail(user.Email, "Verify your email with Saf-T-Child", body);
+                if (success)
                 {
                     return Ok(success);
                 }
