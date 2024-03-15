@@ -48,5 +48,9 @@ namespace API_Saf_T_Child.Models
             public long PhoneNumberValue { get; set; }
         }
 
+        [BsonElement("Name")]
+        [Required]
+        public string? Name { get; set; }
+
     }
 }
