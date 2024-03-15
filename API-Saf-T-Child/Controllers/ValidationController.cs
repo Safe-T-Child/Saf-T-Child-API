@@ -37,7 +37,7 @@ namespace API_Saf_T_Child.Controllers
         public async Task<ActionResult<bool>> CheckEmailAvailability(string email)
         {
             var users = await _mongoDBService.GetUsersAsync();
-            bool isEmailTaken = users.Any(u => u.Email != null && u.Email.Contains(email));
+            bool isEmailTaken = users.Any(u => u.Email != null && u.Email == email);
 
             // Return a response based on the availability
             return Ok(isEmailTaken);
@@ -88,6 +88,21 @@ namespace API_Saf_T_Child.Controllers
             else
             {
                 return BadRequest("Invalid User");
+            }
+        }
+        [HttpGet("checkGroupName")]
+        public async Task<ActionResult<bool>> CheckGroupNameAvailability(string userId, string groupName)
+        {
+            var groups = await _mongoDBService.GetAllGroupsAsync();
+
+            if(groups != null)
+            {
+                bool isGroupNameTaken = groups.Any(g => g.Owner.Id == userId && g.Name == groupName);
+                return Ok(isGroupNameTaken);
+            }
+            else
+            {
+                return BadRequest("Invalid User ID");
             }
         }
     }
