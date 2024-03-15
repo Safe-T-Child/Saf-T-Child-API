@@ -23,7 +23,7 @@ namespace API_Saf_T_Child.Models
 
         [BsonElement("email")]
         [Required]
-        public List<String>? Email { get; set; }
+        public String? Email { get; set; }
 
         [BsonElement("primaryPhoneNumber")]
         [Required]
@@ -32,17 +32,20 @@ namespace API_Saf_T_Child.Models
         [BsonElement("secondaryPhoneNumbers")]
         public List<PhoneNumber> SecondaryPhoneNumbers { get; set; }
 
+        [BsonElement("isEmailVerified")]
+        public bool isEmailVerified { get; set; }
+
         public class PhoneNumber
         {
-            [BsonElement("areaCode")]
+            [BsonElement("countryCode")]
             [RegularExpression("^[0-9]+$")]
             [Required]
-            public string AreaCode { get; set; }
+            public int CountryCode { get; set; }
 
             [BsonElement("phoneNumber")]
             [RegularExpression("^[0-9]+$")]
             [Required]
-            public string PhoneNumberValue { get; set; }
+            public long PhoneNumberValue { get; set; }
         }
 
     }
