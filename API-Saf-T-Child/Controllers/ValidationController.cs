@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace API_Saf_T_Child.Controllers
 {
-    [Route("api/device")]
+    [Route("api/validation")]
     public class ValidationController : Controller
     {
         // Private field representing an instance of the MongoDBService class, which will be used to interact with the MongoDB database.
