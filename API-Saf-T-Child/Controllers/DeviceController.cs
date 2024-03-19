@@ -31,6 +31,30 @@ namespace API_Saf_T_Child.Controllers
             return Ok(devices);
         }
 
+        [HttpGet("by-activation-code/{activationCode}")]
+        public async Task<ActionResult<Device>> GetByActivationCode(long activationCode)
+        {
+            // Convert activationCode to string to check its length
+            string activationCodeStr = activationCode.ToString();
+            
+            // Check if the length of the activationCode is exactly 9 digits
+            if (activationCodeStr.Length != 9)
+            {
+                // Return BadRequest if not exactly 9 digits
+                return BadRequest("The activation code must be exactly 9 digits long.");
+            }
+
+            var device = await _mongoDBService.GetDeviceByActivationCodeAsync(activationCode);
+            
+            if (device == null)
+            {
+                // Return NotFound if the device is not found
+                return NotFound("Device not found.");
+            }
+
+            return Ok(device);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Device device)
         {
@@ -66,6 +90,14 @@ namespace API_Saf_T_Child.Controllers
             {
                 return NotFound();
             }
+        }
+
+        [HttpGet("by-owner/{id}")]
+        public async Task<ActionResult<IEnumerable<Device>>> GetDevicesByOwner(string id)
+        {
+            var devices = await _mongoDBService.GetDevicesByOwnerAsync(id);
+            
+            return Ok(devices);
         }
     }
 }

@@ -8,5 +8,6 @@
         public string Collection2 { get; set; } = null!;
         public string Collection3 { get; set; } = null!;
         public string Collection4 { get; set; } = null!;
+        public string VehicleCollection { get; set; } = null!;
     }
 }
