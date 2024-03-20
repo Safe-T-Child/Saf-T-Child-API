@@ -12,25 +12,25 @@ namespace API_Saf_T_Child.Models
 
         [BsonElement("firstName")]
         [Required]
-        public string? FirstName { get; set; }
+        public string FirstName { get; set; }
 
         [BsonElement("lastName")]
         [Required]
-        public string? LastName { get; set; }
+        public string LastName { get; set; }
 
         [BsonElement("userName")]
         public string UserName { get; set; }
 
         [BsonElement("email")]
         [Required]
-        public String? Email { get; set; }
+        public String Email { get; set; }
 
         [BsonElement("primaryPhoneNumber")]
         [Required]
         public PhoneNumber PrimaryPhoneNumber { get; set; }
 
         [BsonElement("secondaryPhoneNumbers")]
-        public List<PhoneNumber> SecondaryPhoneNumbers { get; set; }
+        public List<PhoneNumber>? SecondaryPhoneNumbers { get; set; }
 
         [BsonElement("isEmailVerified")]
         public bool isEmailVerified { get; set; }

@@ -109,57 +109,182 @@ namespace API_Saf_T_Child.Services
         //Insert
         public async Task InsertUserAsync(User user)
         {
+            var users = await GetUsersAsync();
+            bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
+
+            if (isUsernameTaken)
+            {
+                throw new ArgumentNullException(nameof(user.UserName), "Username is already taken.");
+            }
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user), "User object cannot be null.");
+            }
+
+            if (user.UserName == null)
+            {
+                throw new ArgumentNullException(nameof(user.UserName), "UserName cannot be null.");
+            }
+
+            if (user.Id == null)
+            {
+                throw new ArgumentNullException(nameof(user.Id), "User Id cannot be null.");
+            }
+
+            if (user.Email == null)
+            {
+                throw new ArgumentNullException(nameof(user.Email), "Email cannot be null.");
+            }
+
+            if (user.PrimaryPhoneNumber == null)
+            {
+                throw new ArgumentNullException(nameof(user.PrimaryPhoneNumber), "Primary phone number cannot be null.");
+            }
+
             await _userCollection.InsertOneAsync(user);
         }
 
         public async Task InsertGroupAsync(Group group)
         {
+            if (group == null)
+            {
+                throw new ArgumentNullException(nameof(group), "Group object cannot be null.");
+            }
+
+            if (group.Owner == null)
+            {
+                throw new ArgumentNullException(nameof(group.Owner), "Missing group owner. This field cannot be null.");
+            }
+
+            if (group.Id == null)
+            {
+                throw new ArgumentNullException(nameof(group.Id), "Missing group Id. This field cannot be null.");
+            }
+
             await _groupCollection.InsertOneAsync(group);
         }
 
         public async Task InsertDeviceAsync(Device device)
         {
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device), "Device object cannot be null.");
+            }
+
+            if (device.Id == null)
+            {
+                throw new ArgumentNullException(nameof(device), "Device Id cannot be null.");
+            }
+
+            if (device.DeviceId == null)
+            {
+                throw new ArgumentNullException(nameof(device.DeviceId), "Device Id (Serial) cannot be null.");
+            }
+
+            if (device.Name == null)
+            {
+                throw new ArgumentNullException(nameof(device.Name), "Device name cannot be null.");
+            }
+
+            if (device.Model == null)
+            {
+                throw new ArgumentNullException(nameof(device.Model), "Device model cannot be null.");
+            }
+
+            if (device.Car == null)
+            {
+                throw new ArgumentNullException(nameof(device.Car), "Car cannot be null.");
+            }
+
+            // TODO: Additional validation logic for the Device object, if needed
+
             await _deviceCollection.InsertOneAsync(device);
         }
 
         // Update
         public async Task<bool> UpdateUserAsync(string id, User user)
         {
+            var users = await GetUsersAsync();
+            bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
+
+            if (isUsernameTaken)
+            {
+                throw new ArgumentNullException(nameof(user.UserName), "Username is already taken.");
+            }
+
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(id));
+            }
+
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user), "User object cannot be null.");
+            }
+
             var filter = Builders<User>.Filter.Eq("_id", ObjectId.Parse(id));
+
             var update = Builders<User>.Update
-                .Set("Name", user.FirstName) // Update other properties as needed
-                                        // Add more update operations as needed
-                .CurrentDate("LastModified");
+                .Set("userName", user.UserName)
+                .Set("firstName", user.FirstName)
+                .Set("lastName", user.LastName)
+                .Set("email", user.Email)
+                .Set("primaryPhoneNumer", user.PrimaryPhoneNumber)
+                .Set("secondaryPhoneNumbers", user.SecondaryPhoneNumbers);
 
             var result = await _userCollection.UpdateOneAsync(filter, update);
 
             return result.ModifiedCount > 0;
         }
 
-        public async Task<bool> UpdateGroupAsync(string id, Group updatedGroup)
+        public async Task<bool> UpdateGroupAsync(string id, Group group)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(id));
+            }
+
+
+            if (group == null)
+            {
+                throw new ArgumentNullException(nameof(group), "Group object cannot be null.");
+            }
+
             var filter = Builders<Group>.Filter.Eq(g => g.Id, id);
             var update = Builders<Group>.Update
-                .Set(g => g.Name, updatedGroup.Name)
-                .Set(g => g.Owner, updatedGroup.Owner)
-                .Set(g => g.Users, updatedGroup.Users);
+                .Set(g => g.Name, group.Name)
+                .Set(g => g.Owner, group.Owner)
+                .Set(g => g.Users, group.Users);
 
             var result = await _groupCollection.UpdateOneAsync(filter, update);
             return result.ModifiedCount > 0;
         }
 
-        public async Task<bool> UpdateDeviceAsync(string id, Device updatedDevice)
+        public async Task<bool> UpdateDeviceAsync(string id, Device device)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException("Device ID cannot be null or empty.", nameof(id));
+            }
+
+
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device), "Device object cannot be null.");
+            }
+
             var filter = Builders<Device>.Filter.Eq(d => d.Id, id);
             var update = Builders<Device>.Update
-                .Set(d => d.Type, updatedDevice.Type)
-                .Set(d => d.Name, updatedDevice.Name)
-                .Set(d => d.Model, updatedDevice.Model)
-                .Set(d => d.DeviceId, updatedDevice.DeviceId)
-                .Set(d => d.Car, updatedDevice.Car)
-                .Set(d => d.Status, updatedDevice.Status)
-                .Set(d => d.Owner, updatedDevice.Owner)
-                .Set(d => d.Group, updatedDevice.Group);
+                .Set(d => d.Type, device.Type)
+                .Set(d => d.Name, device.Name)
+                .Set(d => d.Model, device.Model)
+                .Set(d => d.DeviceId, device.DeviceId)
+                .Set(d => d.Car, device.Car)
+                .Set(d => d.Status, device.Status)
+                .Set(d => d.Owner, device.Owner)
+                .Set(d => d.GroupID, device.GroupID);
 
             var result = await _deviceCollection.UpdateOneAsync(filter, update);
             return result.ModifiedCount > 0;
