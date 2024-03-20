@@ -14,6 +14,8 @@ namespace API_Saf_T_Child.Services
         private readonly IMongoCollection<Group> _groupCollection;
         private readonly IMongoCollection<Device> _deviceCollection;
 
+        private readonly IMongoCollection<Vehicle> _vehicleCollection;
+
         public MongoDBService(IOptions<MongoDBSettings> mongoDBSettings)
         {
             MongoClient client = new MongoClient(mongoDBSettings.Value.ConnectionURI);
@@ -21,6 +23,7 @@ namespace API_Saf_T_Child.Services
             _userCollection = database.GetCollection<User>(mongoDBSettings.Value.Collection1);
             _groupCollection = database.GetCollection<Group>(mongoDBSettings.Value.Collection3);
             _deviceCollection = database.GetCollection<Device>(mongoDBSettings.Value.Collection4);
+            _vehicleCollection = database.GetCollection<Vehicle>(mongoDBSettings.Value.VehicleCollection);
         }
 
         // Get
@@ -70,6 +73,37 @@ namespace API_Saf_T_Child.Services
             var device = await _deviceCollection.Find(filter).FirstOrDefaultAsync();
 
             return device;
+        }
+
+        public async Task<Device> GetDeviceByActivationCodeAsync(long activationCode)
+        {
+            var filter = Builders<Device>.Filter.Eq("deviceActivationCode", activationCode);
+            var device = await _deviceCollection.Find(filter).FirstOrDefaultAsync();
+
+            return device;
+        }
+
+        public async Task<List<Device>> GetDevicesByOwnerAsync(string ownerId)
+        {
+            var filter = Builders<Device>.Filter.Eq("deviceOwner._id", ObjectId.Parse(ownerId));
+            var devices = await _deviceCollection.Find(filter).ToListAsync();
+
+            return devices;
+        }
+
+        public async Task<List<Group>> GetGroupsByOwnerAsync(string userId)
+        {
+            var filter = Builders<Group>.Filter.Eq("owner._id", ObjectId.Parse(userId));
+            var groups = await _groupCollection.Find(filter).ToListAsync();
+
+            return groups;
+        }
+
+        public async Task<List<Vehicle>> GetVehiclesByOwnerAsync(string ownerId)
+        {
+            var filter = Builders<Vehicle>.Filter.Eq("owner._id", ObjectId.Parse(ownerId));
+            var vehicles = await _vehicleCollection.Find(filter).ToListAsync();
+            return vehicles;
         }
 
         //Insert

@@ -23,7 +23,6 @@ namespace API_Saf_T_Child.Controllers
             var group = await _mongoDBService.GetAllGroupsAsync();
             return Ok(group);
         }
-
         [HttpGet("{id}")]
         public async Task<ActionResult<Group>> Get(string id)
         {
@@ -73,6 +72,14 @@ namespace API_Saf_T_Child.Controllers
             {
                 return NotFound();
             }
+        }
+
+        [HttpGet("by-owner/{id}")]
+        public async Task<ActionResult<IEnumerable<Device>>> GetGroupsByOwner(string id)
+        {
+            var devices = await _mongoDBService.GetGroupsByOwnerAsync(id);
+            
+            return Ok(devices);
         }
     }
 }

@@ -12,8 +12,5 @@ namespace API_Saf_T_Child.Models
 
         [BsonElement("name")]
         public string Name { get; set; }
-
-        [BsonElement("role")]
-        public string Role { get; set; }
     }
 }
