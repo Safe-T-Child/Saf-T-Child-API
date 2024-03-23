@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - Saft-T-Child-Services
+name: Build and deploy ASP.Net Core app to Azure Web App - Saf-T-Child-Services
 
 on:
   push:
@@ -38,20 +38,20 @@ jobs:
     runs-on: windows-latest
     needs: build
     environment:
-      name: 'Production'
+      name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
+    
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
         with:
           name: .net-app
-
+      
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'Saft-T-Child-Services'
-          slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5B63458811714B1AAF7843495AFC0994 }}
+          app-name: 'Saf-T-Child-Services'
+          slot-name: 'production'
           package: .
+          publish-profile: ${{ secrets.AzureAppService_PublishProfile_1234 }}
