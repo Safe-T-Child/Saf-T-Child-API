@@ -262,7 +262,7 @@ namespace API_Saf_T_Child.Services
             return result.ModifiedCount > 0;
         }
 
-        public async Task<bool> UpdateDeviceAsync(string id, Device device)
+        public async Task<bool> UpdateDeviceAsync(string id, Device updatedDevice)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -270,9 +270,9 @@ namespace API_Saf_T_Child.Services
             }
 
 
-            if (device == null)
+            if (updatedDevice == null)
             {
-                throw new ArgumentNullException(nameof(device), "Device object cannot be null.");
+                throw new ArgumentNullException(nameof(updatedDevice), "Device object cannot be null.");
             }
 
             var filter = Builders<Device>.Filter.Eq(d => d.Id, id);
