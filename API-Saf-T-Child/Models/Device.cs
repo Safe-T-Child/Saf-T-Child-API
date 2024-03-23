@@ -24,7 +24,10 @@ namespace API_Saf_T_Child.Models
         public string DeviceId { get; set; }
 
         [BsonElement("deviceActivationCode")]
-        public int DeviceActivationCode { get; set;  }
+        public long DeviceActivationCode { get; set; }
+
+        [BsonElement("car")]
+        public NamedDocumentKey? Car { get; set; }
 
         [BsonElement("deviceStatus")]
         public string Status { get; set; }
@@ -33,9 +36,9 @@ namespace API_Saf_T_Child.Models
         public NamedDocumentKey Car { get; set; }
 
         [BsonElement("deviceOwner")]
-        public NamedDocumentKey Owner { get; set; }
+        public NamedDocumentKey? Owner { get; set; }
 
         [BsonElement("deviceGroup")]
-        public NamedDocumentKey GroupID { get; set; }
+        public NamedDocumentKey? Group { get; set; }
     }
 }

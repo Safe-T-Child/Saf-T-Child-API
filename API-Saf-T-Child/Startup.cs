@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using API_Saf_T_Child.Models;
 using API_Saf_T_Child.Services;
+using System.Net.Mail;
 
 namespace API_Saf_T_Child
 {
@@ -22,6 +23,7 @@ namespace API_Saf_T_Child
         {
             // Configure MongoDBSettings and bind it to the MongoDBSettings class
             services.Configure<MongoDBSettings>(Configuration.GetSection("MongoDB"));
+            services.Configure<MailSettings>(Configuration.GetSection("Mail"));
 
             // Configure services here
             services.AddMvc().AddControllersAsServices(); // Add MVC services
@@ -29,6 +31,7 @@ namespace API_Saf_T_Child
 
             // Inject IOptions<MongoDBSettings> into MongoDBService constructor
             services.AddSingleton<MongoDBService>();
+            services.AddSingleton<MessageService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,6 +50,9 @@ namespace API_Saf_T_Child
             }
 
             app.UseHttpsRedirection();
+            
+            app.UseCors("AllowAll");
+            
             app.UseRouting();
 
             // Add authorization middleware
