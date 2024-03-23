@@ -285,7 +285,7 @@ namespace API_Saf_T_Child.Services
                 .Set(d => d.Car, updatedDevice.Car)
                 .Set(d => d.Status, updatedDevice.Status)
                 .Set(d => d.Owner, updatedDevice.Owner)
-                .Set(d => d.GroupID, updatedDevice.GroupID);
+                .Set(d => d.Group, updatedDevice.Group);
 
             var result = await _deviceCollection.UpdateOneAsync(filter, update);
             return result.ModifiedCount > 0;
