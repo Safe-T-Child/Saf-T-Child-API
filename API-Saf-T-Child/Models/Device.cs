@@ -23,11 +23,14 @@ namespace API_Saf_T_Child.Models
         [BsonElement("deviceSerial")]
         public string DeviceId { get; set; }
 
-        [BsonElement("car")]
-        public NamedDocumentKey Car { get; set; }
+        [BsonElement("deviceActivationCode")]
+        public int DeviceActivationCode { get; set;  }
 
         [BsonElement("deviceStatus")]
         public string Status { get; set; }
+
+        [BsonElement("car")]
+        public NamedDocumentKey Car { get; set; }
 
         [BsonElement("deviceOwner")]
         public NamedDocumentKey Owner { get; set; }

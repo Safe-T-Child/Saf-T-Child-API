@@ -122,6 +122,7 @@ namespace API_Saf_T_Child.Services
                 .Set(d => d.Name, updatedDevice.Name)
                 .Set(d => d.Model, updatedDevice.Model)
                 .Set(d => d.DeviceId, updatedDevice.DeviceId)
+                .Set(d => d.DeviceActivationCode, updatedDevice.DeviceActivationCode)
                 .Set(d => d.Car, updatedDevice.Car)
                 .Set(d => d.Status, updatedDevice.Status)
                 .Set(d => d.Owner, updatedDevice.Owner)
