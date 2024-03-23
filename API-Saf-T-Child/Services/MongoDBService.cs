@@ -277,14 +277,15 @@ namespace API_Saf_T_Child.Services
 
             var filter = Builders<Device>.Filter.Eq(d => d.Id, id);
             var update = Builders<Device>.Update
-                .Set(d => d.Type, device.Type)
-                .Set(d => d.Name, device.Name)
-                .Set(d => d.Model, device.Model)
-                .Set(d => d.DeviceId, device.DeviceId)
-                .Set(d => d.Car, device.Car)
-                .Set(d => d.Status, device.Status)
-                .Set(d => d.Owner, device.Owner)
-                .Set(d => d.GroupID, device.GroupID);
+                .Set(d => d.Type, updatedDevice.Type)
+                .Set(d => d.Name, updatedDevice.Name)
+                .Set(d => d.Model, updatedDevice.Model)
+                .Set(d => d.DeviceId, updatedDevice.DeviceId)
+                .Set(d => d.DeviceActivationCode, updatedDevice.DeviceActivationCode)
+                .Set(d => d.Car, updatedDevice.Car)
+                .Set(d => d.Status, updatedDevice.Status)
+                .Set(d => d.Owner, updatedDevice.Owner)
+                .Set(d => d.GroupID, updatedDevice.GroupID);
 
             var result = await _deviceCollection.UpdateOneAsync(filter, update);
             return result.ModifiedCount > 0;
