@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using API_Saf_T_Child.Models;
 using API_Saf_T_Child.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API_Saf_T_Child.Controllers
 {
