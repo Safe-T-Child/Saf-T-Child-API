@@ -9,15 +9,14 @@ namespace API_Saf_T_Child.Controllers
     [Route("api/device")]
     public class DeviceController : Controller
     {
-        // Private field representing an instance of the MongoDBService class, which will be used to interact with the MongoDB database.
         private readonly MongoDBService _mongoDBService;
 
-        // This constructor injects an instance of MongoDBService into the controller.
         public DeviceController(MongoDBService mongoDBService)
         {
             _mongoDBService = mongoDBService;
         }
 
+        // TODO: DELETE THIS API ENDPOINT
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Device>>> Get()
         {
@@ -26,6 +25,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Device>>> Get(string id)
         {
             var devices = await _mongoDBService.GetDeviceByIdAsync(id);
@@ -57,6 +57,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Post([FromBody] Device device)
         {
             await _mongoDBService.InsertDeviceAsync(device);
@@ -64,6 +65,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateDevice(string id, [FromBody] Device device)
         {
             var result = await _mongoDBService.UpdateDeviceAsync(id, device);
@@ -79,6 +81,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> Delete(string id)
         {
             var result = await _mongoDBService.DeleteDeviceAsync(id);
@@ -94,6 +97,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpGet("by-owner/{id}")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Device>>> GetDevicesByOwner(string id)
         {
             var devices = await _mongoDBService.GetDevicesByOwnerAsync(id);

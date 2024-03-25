@@ -29,6 +29,9 @@ namespace API_Saf_T_Child.Models
         [Required]
         public PhoneNumber PrimaryPhoneNumber { get; set; }
 
+        [BsonElement("password")]
+        public string? Password { get; set; }
+
         [BsonElement("secondaryPhoneNumbers")]
         public List<PhoneNumber>? SecondaryPhoneNumbers { get; set; }
 

@@ -1,11 +1,5 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using API_Saf_T_Child.Models;
 using API_Saf_T_Child.Services;
-using System.Net.Mail;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -44,10 +38,8 @@ namespace API_Saf_T_Child
                         {
                             context.Response.Headers.Add("Token-Error-Audience", "Invalid audience");
                         }
-                        // Log or handle other types of exceptions
                         return Task.CompletedTask;
                     },
-                    // Consider adding other event handlers for more detailed error reporting
                 };
                 options.TokenValidationParameters = new TokenValidationParameters
                 {

@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using API_Saf_T_Child.Models;
 using API_Saf_T_Child.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API_Saf_T_Child.Controllers
 {
@@ -18,6 +19,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpGet("by-owner/{id}")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Vehicle>>> GetGroupsByOwner(string id)
         {
             var devices = await _mongoDBService.GetVehiclesByOwnerAsync(id);

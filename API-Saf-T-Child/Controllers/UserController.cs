@@ -2,23 +2,23 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using API_Saf_T_Child.Models;
 using API_Saf_T_Child.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API_Saf_T_Child.Controllers
 {
     [Route("api/user")]
     public class UserController: Controller
     {
-        // Private field representing an instance of the MongoDBService class, which will be used to interact with the MongoDB database.
         private readonly MongoDBService _mongoDBService;
         private readonly MessageService _messageService;
 
-        // This constructor injects an instance of MongoDBService into the controller.
         public UserController(MongoDBService mongoDBService, MessageService messageService)
         {
             _mongoDBService = mongoDBService;
             _messageService = messageService;
         }
 
+        // TODO: DELETE THIS API ENDPOINT
         [HttpGet("getAllUsers")]
         public async Task<ActionResult<IEnumerable<User>>> Get()
         {
@@ -27,6 +27,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpGet("getUserById")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<User>>> Get(string id)
         {
             var users = await _mongoDBService.GetUserByIdAsync(id);
@@ -41,6 +42,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpPut("updateUser")]
+        [Authorize]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] User user)
         {
             var result = await _mongoDBService.UpdateUserAsync(id, user);
@@ -56,6 +58,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpDelete("deleteUser")]
+        [Authorize]
         public async Task<IActionResult> Delete(string id)
         {
             var result = await _mongoDBService.DeleteUserAsync(id);

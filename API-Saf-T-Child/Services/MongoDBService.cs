@@ -10,42 +10,62 @@ namespace API_Saf_T_Child.Services
 {
     public class MongoDBService
     {
-        private readonly IMongoCollection<User> _userCollection;
-        private readonly IMongoCollection<Group> _groupCollection;
-        private readonly IMongoCollection<Device> _deviceCollection;
-
-        private readonly IMongoCollection<Vehicle> _vehicleCollection;
+        private readonly IMongoCollection<User> _usersCollection;
+        private readonly IMongoCollection<Group> _groupsCollection;
+        private readonly IMongoCollection<Device> _devicesCollection;
+        private readonly IMongoCollection<Vehicle> _vehiclesCollection;
 
         public MongoDBService(IOptions<MongoDBSettings> mongoDBSettings)
         {
             MongoClient client = new MongoClient(mongoDBSettings.Value.ConnectionURI);
             IMongoDatabase database = client.GetDatabase(mongoDBSettings.Value.DatabaseName);
-            _userCollection = database.GetCollection<User>(mongoDBSettings.Value.Collection1);
-            _groupCollection = database.GetCollection<Group>(mongoDBSettings.Value.Collection3);
-            _deviceCollection = database.GetCollection<Device>(mongoDBSettings.Value.Collection4);
-            _vehicleCollection = database.GetCollection<Vehicle>(mongoDBSettings.Value.VehicleCollection);
+            _usersCollection = database.GetCollection<User>(mongoDBSettings.Value.UsersCollection);
+            _groupsCollection = database.GetCollection<Group>(mongoDBSettings.Value.GroupsCollection);
+            _devicesCollection = database.GetCollection<Device>(mongoDBSettings.Value.DevicesCollection);
+            _vehiclesCollection = database.GetCollection<Vehicle>(mongoDBSettings.Value.VehiclesCollection);
         }
 
-        // Get
+        # region Users
+
         public async Task<List<User>> GetUsersAsync()
-        {
-            var users = await _userCollection.Find(_ => true).ToListAsync();
+        { 
+            
+            var users = await _usersCollection.Find(_ => true).ToListAsync();
             return users;
         }
-
         public async Task<User> GetUserByIdAsync(string id)
         {
             var objectId = new ObjectId(id); // Convert string ID to ObjectId
 
             var filter = Builders<User>.Filter.Eq("_id", objectId); // Filter by group ID
-            var user = await _userCollection.Find(filter).FirstOrDefaultAsync();
+            var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
 
             return user;
         }
 
+        public async Task<User> LoginUserAsync(string username, string password)
+        {
+            var filter = Builders<User>.Filter.Eq("userName", username);
+            var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return null;
+            }
+            if (user.Password != password)
+            {
+                return null;
+            }
+            return user;
+        }
+
+        # endregion
+
+        # region Groups
+
         public async Task<List<Group>> GetAllGroupsAsync()
         {
-            var groups = await _groupCollection.Find(_ => true).ToListAsync();
+            var groups = await _groupsCollection.Find(_ => true).ToListAsync();
             return groups;
         }
 
@@ -54,23 +74,33 @@ namespace API_Saf_T_Child.Services
             var objectId = new ObjectId(id); // Convert string ID to ObjectId
 
             var filter = Builders<Group>.Filter.Eq("_id", objectId); // Filter by group ID
-            var group = await _groupCollection.Find(filter).FirstOrDefaultAsync();
+            var group = await _groupsCollection.Find(filter).FirstOrDefaultAsync();
 
             return group;
         }
 
         public async Task<List<Device>> GetAllDevicesAsync()
         {
-            var devices = await _deviceCollection.Find(_ => true).ToListAsync();
+            var devices = await _devicesCollection.Find(_ => true).ToListAsync();
             return devices;
         }
 
+        public async Task<List<Group>> GetGroupsByOwnerAsync(string userId)
+        {
+            var filter = Builders<Group>.Filter.Eq("owner._id", ObjectId.Parse(userId));
+            var groups = await _groupsCollection.Find(filter).ToListAsync();
+
+            return groups;
+        }
+        # endregion
+
+        #region Devices
         public async Task<Device> GetDeviceByIdAsync(string id)
         {
             var objectId = new ObjectId(id); // Convert string ID to ObjectId
 
             var filter = Builders<Device>.Filter.Eq("_id", objectId); // Filter by group ID
-            var device = await _deviceCollection.Find(filter).FirstOrDefaultAsync();
+            var device = await _devicesCollection.Find(filter).FirstOrDefaultAsync();
 
             return device;
         }
@@ -78,7 +108,7 @@ namespace API_Saf_T_Child.Services
         public async Task<Device> GetDeviceByActivationCodeAsync(long activationCode)
         {
             var filter = Builders<Device>.Filter.Eq("deviceActivationCode", activationCode);
-            var device = await _deviceCollection.Find(filter).FirstOrDefaultAsync();
+            var device = await _devicesCollection.Find(filter).FirstOrDefaultAsync();
 
             return device;
         }
@@ -86,27 +116,26 @@ namespace API_Saf_T_Child.Services
         public async Task<List<Device>> GetDevicesByOwnerAsync(string ownerId)
         {
             var filter = Builders<Device>.Filter.Eq("deviceOwner._id", ObjectId.Parse(ownerId));
-            var devices = await _deviceCollection.Find(filter).ToListAsync();
+            var devices = await _devicesCollection.Find(filter).ToListAsync();
 
             return devices;
         }
 
-        public async Task<List<Group>> GetGroupsByOwnerAsync(string userId)
-        {
-            var filter = Builders<Group>.Filter.Eq("owner._id", ObjectId.Parse(userId));
-            var groups = await _groupCollection.Find(filter).ToListAsync();
+       
 
-            return groups;
-        }
+        #endregion
 
+        #region Vehicles
         public async Task<List<Vehicle>> GetVehiclesByOwnerAsync(string ownerId)
         {
             var filter = Builders<Vehicle>.Filter.Eq("owner._id", ObjectId.Parse(ownerId));
-            var vehicles = await _vehicleCollection.Find(filter).ToListAsync();
+            var vehicles = await _vehiclesCollection.Find(filter).ToListAsync();
             return vehicles;
         }
 
-        //Insert
+        #endregion
+
+        #region Insert
         public async Task InsertUserAsync(User user)
         {
             var users = await GetUsersAsync();
@@ -142,7 +171,7 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(user.PrimaryPhoneNumber), "Primary phone number cannot be null.");
             }
 
-            await _userCollection.InsertOneAsync(user);
+            await _usersCollection.InsertOneAsync(user);
         }
 
         public async Task InsertGroupAsync(Group group)
@@ -162,7 +191,7 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(group.Id), "Missing group Id. This field cannot be null.");
             }
 
-            await _groupCollection.InsertOneAsync(group);
+            await _groupsCollection.InsertOneAsync(group);
         }
 
         public async Task InsertDeviceAsync(Device device)
@@ -199,10 +228,12 @@ namespace API_Saf_T_Child.Services
 
             // TODO: Additional validation logic for the Device object, if needed
 
-            await _deviceCollection.InsertOneAsync(device);
+            await _devicesCollection.InsertOneAsync(device);
         }
 
-        // Update
+        #endregion
+
+        #region Update
         public async Task<bool> UpdateUserAsync(string id, User user)
         {
             var users = await GetUsersAsync();
@@ -234,7 +265,7 @@ namespace API_Saf_T_Child.Services
                 .Set("primaryPhoneNumer", user.PrimaryPhoneNumber)
                 .Set("secondaryPhoneNumbers", user.SecondaryPhoneNumbers);
 
-            var result = await _userCollection.UpdateOneAsync(filter, update);
+            var result = await _usersCollection.UpdateOneAsync(filter, update);
 
             return result.ModifiedCount > 0;
         }
@@ -258,7 +289,7 @@ namespace API_Saf_T_Child.Services
                 .Set(g => g.Owner, group.Owner)
                 .Set(g => g.Users, group.Users);
 
-            var result = await _groupCollection.UpdateOneAsync(filter, update);
+            var result = await _groupsCollection.UpdateOneAsync(filter, update);
             return result.ModifiedCount > 0;
         }
 
@@ -287,15 +318,16 @@ namespace API_Saf_T_Child.Services
                 .Set(d => d.Owner, updatedDevice.Owner)
                 .Set(d => d.Group, updatedDevice.Group);
 
-            var result = await _deviceCollection.UpdateOneAsync(filter, update);
+            var result = await _devicesCollection.UpdateOneAsync(filter, update);
             return result.ModifiedCount > 0;
         }
+        #endregion
 
-        // Delete
+        #region Delete
         public async Task<bool> DeleteUserAsync(string id)
         {
             var filter = Builders<User>.Filter.Eq("_id", ObjectId.Parse(id));
-            var result = await _userCollection.DeleteOneAsync(filter);
+            var result = await _usersCollection.DeleteOneAsync(filter);
 
             return result.DeletedCount > 0;
         }
@@ -303,7 +335,7 @@ namespace API_Saf_T_Child.Services
         public async Task<bool> DeleteGroupAsync(string id)
         {
             var filter = Builders<Group>.Filter.Eq("_id", ObjectId.Parse(id));
-            var result = await _groupCollection.DeleteOneAsync(filter);
+            var result = await _groupsCollection.DeleteOneAsync(filter);
 
             return result.DeletedCount > 0;
         }
@@ -311,9 +343,10 @@ namespace API_Saf_T_Child.Services
         public async Task<bool> DeleteDeviceAsync(string id)
         {
             var filter = Builders<Device>.Filter.Eq("_id", ObjectId.Parse(id));
-            var result = await _deviceCollection.DeleteOneAsync(filter);
+            var result = await _devicesCollection.DeleteOneAsync(filter);
 
             return result.DeletedCount > 0;
         }
+        #endregion 
     }
 }
