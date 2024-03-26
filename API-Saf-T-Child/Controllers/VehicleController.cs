@@ -26,5 +26,45 @@ namespace API_Saf_T_Child.Controllers
             
             return Ok(devices);
         }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> InsertVehicle([FromBody] Vehicle vehicle)
+        {
+            await _mongoDBService.InsertVehicleAsync(vehicle);
+            return Ok(vehicle);
+        }
+
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateVehicle(string id, [FromBody] Vehicle vehicle)
+        {
+            var result = await _mongoDBService.UpdateVehicleAsync(id, vehicle);
+
+            if (result)
+            {
+                return Ok(vehicle);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var result = await _mongoDBService.DeleteVehicleAsync(id);
+
+            if (result)
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
     }
 }

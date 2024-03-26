@@ -226,6 +226,51 @@ namespace API_Saf_T_Child.Services
             await _devicesCollection.InsertOneAsync(device);
         }
 
+        public async Task InsertVehicleAsync(Vehicle vehicle)   
+        {
+            if (vehicle == null)
+            {
+                throw new ArgumentNullException(nameof(vehicle), "Vehicle object cannot be null.");
+            }
+
+            if (vehicle.Id == null)
+            {
+                throw new ArgumentNullException(nameof(vehicle.Owner), "Missing vehicle owner. This field cannot be null.");
+            }
+
+            if (vehicle.Owner == null)
+            {
+                throw new ArgumentNullException(nameof(vehicle.Owner), "Missing vehicle owner. This field cannot be null.");
+            }
+
+            if (vehicle.Name == null)
+            {
+                throw new ArgumentNullException(nameof(vehicle.Name), "Missing vehicle name. This field cannot be null.");
+            }
+
+            if (vehicle.Make == null)
+            {
+                throw new ArgumentNullException(nameof(vehicle.Make), "Missing vehicle make. This field cannot be null.");
+            }
+
+            if (vehicle.Model == null)
+            {
+                throw new ArgumentNullException(nameof(vehicle.Model), "Missing vehicle model. This field cannot be null.");
+            }
+
+            if (vehicle.Color == null)
+            {
+                throw new ArgumentNullException(nameof(vehicle.Color), "Missing vehicle color. This field cannot be null.");
+            }
+
+            if (vehicle.LicensePlate == null)
+            {
+                throw new ArgumentNullException(nameof(vehicle.LicensePlate), "Missing vehicle license plate. This field cannot be null.");
+            }
+
+            await _vehiclesCollection.InsertOneAsync(vehicle);
+        }
+
         #endregion
 
         #region Update
@@ -316,6 +361,33 @@ namespace API_Saf_T_Child.Services
             var result = await _devicesCollection.UpdateOneAsync(filter, update);
             return result.ModifiedCount > 0;
         }
+
+        public async Task<bool> UpdateVehicleAsync(string id, Vehicle updatedVehicle)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException("Vehicle ID cannot be null or empty.", nameof(id));
+            }
+
+
+            if (updatedVehicle == null)
+            {
+                throw new ArgumentNullException(nameof(updatedVehicle), "Vehicle object cannot be null.");
+            }
+
+            var filter = Builders<Vehicle>.Filter.Eq(d => d.Id, id);
+            var update = Builders<Vehicle>.Update
+                .Set(d => d.Owner, updatedVehicle.Owner)
+                .Set(d => d.Name, updatedVehicle.Name)
+                .Set(d => d.Make, updatedVehicle.Make)
+                .Set(d => d.Model, updatedVehicle.Model)
+                .Set(d => d.Year, updatedVehicle.Year)
+                .Set(d => d.Color, updatedVehicle.Color)
+                .Set(d => d.LicensePlate, updatedVehicle.LicensePlate);
+
+            var result = await _vehiclesCollection.UpdateOneAsync(filter, update);
+            return result.ModifiedCount > 0;
+        }
         #endregion
 
         #region Delete
@@ -339,6 +411,14 @@ namespace API_Saf_T_Child.Services
         {
             var filter = Builders<Device>.Filter.Eq("_id", ObjectId.Parse(id));
             var result = await _devicesCollection.DeleteOneAsync(filter);
+
+            return result.DeletedCount > 0;
+        }
+
+        public async Task<bool> DeleteVehicleAsync(string id)
+        {
+            var filter = Builders<Vehicle>.Filter.Eq("_id", ObjectId.Parse(id));
+            var result = await _vehiclesCollection.DeleteOneAsync(filter);
 
             return result.DeletedCount > 0;
         }
