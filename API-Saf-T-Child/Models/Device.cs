@@ -27,7 +27,7 @@ namespace API_Saf_T_Child.Models
         public string Status { get; set; }
 
         [BsonElement("deviceActivationCode")]
-        public long DeviceActivationCode { get; set; }
+        public int DeviceActivationCode { get; set; }
 
         [BsonElement("car")]
         public NamedDocumentKey Car { get; set; }

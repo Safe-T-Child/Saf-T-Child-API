@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using API_Saf_T_Child.Models;
 using API_Saf_T_Child.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API_Saf_T_Child.Controllers
 {
@@ -17,13 +18,24 @@ namespace API_Saf_T_Child.Controllers
             _mongoDBService = mongoDBService;
         }
 
+        // TODO: DELETE THIS API ENDPOINT
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Group>>> Get()
         {
             var group = await _mongoDBService.GetAllGroupsAsync();
             return Ok(group);
         }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Post([FromBody] Group group)
+        {
+            await _mongoDBService.InsertGroupAsync(group);
+            return Ok(group);
+        }
+
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<Group>> Get(string id)
         {
             var group = await _mongoDBService.GetGroupByIdAsync(id);
@@ -36,15 +48,10 @@ namespace API_Saf_T_Child.Controllers
             return Ok(group);
         }
 
-
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Group group)
-        {
-            await _mongoDBService.InsertGroupAsync(group);
-            return Ok(group);
-        }
+        
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] Group group)
         {
             var result = await _mongoDBService.UpdateGroupAsync(id, group);
@@ -60,6 +67,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> Delete(string id)
         {
             var result = await _mongoDBService.DeleteGroupAsync(id);
@@ -75,6 +83,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpGet("by-owner/{id}")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Device>>> GetGroupsByOwner(string id)
         {
             var devices = await _mongoDBService.GetGroupsByOwnerAsync(id);
