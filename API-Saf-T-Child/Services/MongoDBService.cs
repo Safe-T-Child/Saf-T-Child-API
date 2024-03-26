@@ -199,7 +199,22 @@ namespace API_Saf_T_Child.Services
 
             // TODO: Additional validation logic for the Device object, if needed
 
-            await _deviceCollection.InsertOneAsync(device);
+            // Assign a default group to the device
+            // a family
+            Group group = new Group(
+                ObjectId.GenerateNewId().ToString(),
+                "Default Family",
+                device.Owner
+            );
+
+            await InsertGroupAsync(group);
+
+            try{
+                await _deviceCollection.InsertOneAsync(device);
+            } catch (Exception e){
+                await DeleteGroupAsync(group.Id);
+                throw e;
+            }
         }
 
         // Update

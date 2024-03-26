@@ -22,7 +22,7 @@ namespace API_Saf_T_Child.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [BsonElement("name")]
         public string Name { get; set; }
@@ -32,5 +32,13 @@ namespace API_Saf_T_Child.Models
 
         [BsonElement("users")]
         public List<UserWithRole> Users { get; set; }
+
+        public Group(string id, string name, NamedDocumentKey owner)
+        {
+            Id = id;
+            Name = name;
+            Owner = owner;
+            Users = new List<UserWithRole>();
+        }
     }
 }

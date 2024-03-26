@@ -40,42 +40,47 @@ namespace API_Saf_T_Child.Controllers
         //    return Ok(user);
         //}
 
-        [HttpPost("insertUser")]
-        public async Task<IActionResult> InsertUser([FromBody] User user)
-        {
-            try
-            {
-                if (user == null)
-                {
-                    return BadRequest("Invalid user object");
-                }
+        // [HttpPost("insertUser")]
+        // public async Task<IActionResult> InsertUser([FromBody] User user)
+        // {
+        //     try
+        //     {
+        //         if (user == null)
+        //         {
+        //             return BadRequest("Invalid user object");
+        //         }
 
-                if (!string.IsNullOrEmpty(user.GroupReferralCode))
-                {
-                    var groupExists = await _mongoDBService.GroupExistsAsync(user.GroupReferralCode);
-                    if (!groupExists)
-                    {
-                        return BadRequest("Group referral code does not exist");
-                    }
-                }
+        //         if(string.IsNullOrEmpty(user.GroupReferralCode) && string.IsNullOrEmpty(user.DeviceActivationNumber))
+        //         {
+        //             return BadRequest("Group referral code or device activation number is required");
+        //         }
 
-                if (!string.IsNullOrEmpty(user.DeviceActivationNumber))
-                {
-                    var deviceExists = await _mongoDBService.DeviceExistsAsync(device.DeviceActivationNumber);
-                    if (!deviceExists)
-                    {
-                        return BadRequest("Device activation number does not exist");
-                    }
+        //         if (!string.IsNullOrEmpty(user.GroupReferralCode))
+        //         {
+        //             var groupExists = await _mongoDBService.GroupExistsAsync(user.GroupReferralCode);
+        //             if (!groupExists)
+        //             {
+        //                 return BadRequest("Group referral code does not exist");
+        //             }
+        //         }
 
-                    await _mongoDBService.InsertUserAsync(user);
-                    return Ok(new { message = "User inserted successfully", user });
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
-        }
+        //         if (!string.IsNullOrEmpty(user.DeviceActivationNumber))
+        //         {
+        //             var deviceExists = await _mongoDBService.DeviceExistsAsync(user.DeviceActivationNumber);
+        //             if (!deviceExists)
+        //             {
+        //                 return BadRequest("Device activation number does not exist");
+        //             }
+
+        //             await _mongoDBService.InsertUserAsync(user);
+        //             return Ok(new { message = "User inserted successfully", user });
+        //         }
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return StatusCode(500, $"An error occurred: {ex.Message}");
+        //     }
+        // }
 
         [HttpPut("updateUser")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] User user)
