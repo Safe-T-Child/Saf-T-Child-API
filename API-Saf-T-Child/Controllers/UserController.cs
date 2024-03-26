@@ -68,7 +68,8 @@ namespace API_Saf_T_Child.Controllers
                     }
 
                     await _mongoDBService.InsertUserAsync(user);
-                return Ok(new { message = "User inserted successfully", user });
+                    return Ok(new { message = "User inserted successfully", user });
+                }
             }
             catch (Exception ex)
             {
