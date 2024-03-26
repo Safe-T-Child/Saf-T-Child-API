@@ -26,6 +26,14 @@ namespace API_Saf_T_Child.Controllers
             return Ok(group);
         }
 
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Post([FromBody] Group group)
+        {
+            await _mongoDBService.InsertGroupAsync(group);
+            return Ok(group);
+        }
+
         [HttpGet("{id}")]
         [Authorize]
         public async Task<ActionResult<Group>> Get(string id)
@@ -40,13 +48,7 @@ namespace API_Saf_T_Child.Controllers
             return Ok(group);
         }
 
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> Post([FromBody] Group group)
-        {
-            await _mongoDBService.InsertGroupAsync(group);
-            return Ok(group);
-        }
+        
 
         [HttpPut("{id}")]
         [Authorize]

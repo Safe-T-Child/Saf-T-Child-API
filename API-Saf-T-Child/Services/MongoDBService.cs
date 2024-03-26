@@ -186,11 +186,6 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(group.Owner), "Missing group owner. This field cannot be null.");
             }
 
-            if (group.Id == null)
-            {
-                throw new ArgumentNullException(nameof(group.Id), "Missing group Id. This field cannot be null.");
-            }
-
             await _groupsCollection.InsertOneAsync(group);
         }
 
