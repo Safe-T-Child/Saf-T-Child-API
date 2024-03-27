@@ -197,6 +197,8 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(deviceActivationCode), "Device with the specified activation code not found.");
             }
 
+            
+
 
             var name = user.FirstName + " " + user.LastName;
 
@@ -209,7 +211,7 @@ namespace API_Saf_T_Child.Services
                 {
                     await _usersCollection.InsertOneAsync(session, user);
 
-                    await 
+                    
                     
                     Group group = new Group();
                     group = group.CreateGroup("Family Name");
