@@ -34,13 +34,20 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpGet("checkEmail")]
-        public async Task<ActionResult<bool>> CheckEmailAvailability(string email)
+        public async Task<ActionResult<(bool,bool)>> CheckEmailAvailability(string email)
         {
+            (bool, bool) returnVal = (false, false);
             var users = await _mongoDBService.GetUsersAsync();
             bool isEmailTaken = users.Any(u => u.Email != null && u.Email == email);
 
+            if(isEmailTaken)
+            {
+                returnVal.Item1 = isEmailTaken;
+                returnVal.Item2 = users.First(u => u.Email != null && u.Email == email).isTempUser;
+            }
+
             // Return a response based on the availability
-            return Ok(isEmailTaken);
+            return Ok(returnVal);
         }
 
         [HttpGet("checkPhoneNumber")]
