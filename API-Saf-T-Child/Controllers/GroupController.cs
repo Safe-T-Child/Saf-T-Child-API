@@ -90,5 +90,13 @@ namespace API_Saf_T_Child.Controllers
             
             return Ok(devices);
         }
+
+        [HttpPost("add-temporary-user")]
+        // [Authorize]
+        public async Task<IActionResult> AddTemporaryUser([FromBody] TemporaryUser temporaryUser)
+        {
+            await _mongoDBService.InsertTemporaryUserAsync(temporaryUser);
+            return Ok(temporaryUser);
+        }
     }
 }

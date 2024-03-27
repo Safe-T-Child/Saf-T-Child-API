@@ -15,14 +15,19 @@ namespace API_Saf_T_Child.Services
         private readonly IMongoCollection<Device> _devicesCollection;
         private readonly IMongoCollection<Vehicle> _vehiclesCollection;
 
+        private readonly IMongoCollection<TemporaryUser> _temporaryUsersCollection;
+
+        private readonly MongoClient client;
+
         public MongoDBService(IOptions<MongoDBSettings> mongoDBSettings)
         {
-            MongoClient client = new MongoClient(mongoDBSettings.Value.ConnectionURI);
+            client = new MongoClient(mongoDBSettings.Value.ConnectionURI);
             IMongoDatabase database = client.GetDatabase(mongoDBSettings.Value.DatabaseName);
             _usersCollection = database.GetCollection<User>(mongoDBSettings.Value.UsersCollection);
             _groupsCollection = database.GetCollection<Group>(mongoDBSettings.Value.GroupsCollection);
             _devicesCollection = database.GetCollection<Device>(mongoDBSettings.Value.DevicesCollection);
             _vehiclesCollection = database.GetCollection<Vehicle>(mongoDBSettings.Value.VehiclesCollection);
+            _temporaryUsersCollection = database.GetCollection<TemporaryUser>(mongoDBSettings.Value.TempUsersCollection);
         }
 
         # region Users
@@ -79,6 +84,14 @@ namespace API_Saf_T_Child.Services
             return group;
         }
 
+        public async Task<TemporaryUser> GetTemporaryUserByEmailAsync(string groupId, string email)
+        {
+            var filter = Builders<TemporaryUser>.Filter.Eq("email", email) 
+            & Builders<TemporaryUser>.Filter.Eq("groupId", groupId);
+            var temporaryUser = await _temporaryUsersCollection.Find(filter).FirstOrDefaultAsync();
+            return temporaryUser;
+        }
+
         public async Task<List<Device>> GetAllDevicesAsync()
         {
             var devices = await _devicesCollection.Find(_ => true).ToListAsync();
@@ -91,6 +104,12 @@ namespace API_Saf_T_Child.Services
             var groups = await _groupsCollection.Find(filter).ToListAsync();
 
             return groups;
+        }
+
+        public async Task<TemporaryUser> InsertTemporaryUserAsync(TemporaryUser temporaryUser)
+        {
+            await _temporaryUsersCollection.InsertOneAsync(temporaryUser);
+            return temporaryUser;
         }
         # endregion
 
@@ -105,7 +124,7 @@ namespace API_Saf_T_Child.Services
             return device;
         }
 
-        public async Task<Device> GetDeviceByActivationCodeAsync(long activationCode)
+        public async Task<Device> GetDeviceByActivationCodeAsync(int activationCode)
         {
             var filter = Builders<Device>.Filter.Eq("deviceActivationCode", activationCode);
             var device = await _devicesCollection.Find(filter).FirstOrDefaultAsync();
@@ -136,7 +155,7 @@ namespace API_Saf_T_Child.Services
         #endregion
 
         #region Insert
-        public async Task InsertUserAsync(User user)
+        public async Task InsertUserWithActivationCodeAsync(User user, int deviceActivationCode)
         {
             var users = await GetUsersAsync();
             bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
@@ -156,9 +175,87 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(user.UserName), "UserName cannot be null.");
             }
 
-            if (user.Id == null)
+            if (user.Email == null)
             {
-                throw new ArgumentNullException(nameof(user.Id), "User Id cannot be null.");
+                throw new ArgumentNullException(nameof(user.Email), "Email cannot be null.");
+            }
+
+            if (user.PrimaryPhoneNumber == null)
+            {
+                throw new ArgumentNullException(nameof(user.PrimaryPhoneNumber), "Primary phone number cannot be null.");
+            }
+
+            if (deviceActivationCode == 0)
+            {
+                throw new ArgumentNullException(nameof(deviceActivationCode), "Device activation code cannot be null.");
+            }
+
+            Device device = await GetDeviceByActivationCodeAsync(deviceActivationCode);
+            
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(deviceActivationCode), "Device with the specified activation code not found.");
+            }
+
+
+            var name = user.FirstName + " " + user.LastName;
+
+            using (var session = await client.StartSessionAsync())
+            {
+                // Start the transaction
+                session.StartTransaction();
+
+                try
+                {
+                    await _usersCollection.InsertOneAsync(session, user);
+
+                    await 
+                    
+                    Group group = new Group();
+                    group = group.CreateGroup("Family Name");
+
+                    group.Owner = new NamedDocumentKey { Id = user.Id, Name = name };
+
+                    device.Owner = new NamedDocumentKey { Id = user.Id, Name = name };
+
+                    await _groupsCollection.InsertOneAsync(session, group);
+                    // Update Owner and Status of the device
+                    await _devicesCollection.UpdateOneAsync(session, Builders<Device>.Filter.Eq(d => d.Id, device.Id), Builders<Device>.Update
+                        .Set(d => d.Owner, device.Owner)
+                        .Set(d => d.Status, true)
+                        .Set(d => d.Group, new NamedDocumentKey { Id = group.Id, Name = group.Name })
+                    );
+
+                    // Commit the transaction if all operations succeed
+                    await session.CommitTransactionAsync();
+                }
+                catch (Exception ex)
+                {
+                    // Abort the transaction on error
+                    await session.AbortTransactionAsync();
+                    throw; // Rethrow the exception or handle it as needed
+                }
+            }
+        }
+
+        public async Task InsertUserWithGroupIdAsync(User user, string groupId){
+            var users = await GetUsersAsync();
+
+            bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
+
+            if (isUsernameTaken)
+            {
+                throw new ArgumentNullException(nameof(user.UserName), "Username is already taken.");
+            }
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user), "User object cannot be null.");
+            }
+
+            if (user.UserName == null)
+            {
+                throw new ArgumentNullException(nameof(user.UserName), "UserName cannot be null.");
             }
 
             if (user.Email == null)
@@ -171,7 +268,62 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(user.PrimaryPhoneNumber), "Primary phone number cannot be null.");
             }
 
-            await _usersCollection.InsertOneAsync(user);
+            if (groupId == null)
+            {
+                throw new ArgumentNullException(nameof(groupId), "Group ID cannot be null.");
+            }
+
+            Group group = await GetGroupByIdAsync(groupId);
+
+            if (group == null)
+            {
+                throw new ArgumentNullException(nameof(groupId), "Group with the specified ID not found.");
+            }
+
+            TemporaryUser temporaryUser = await GetTemporaryUserByEmailAsync(groupId, user.Email);
+
+            if (temporaryUser == null)
+            {
+                throw new ArgumentNullException(nameof(user.Email), "Temporary user with the specified email not found.");
+            }
+
+            if (temporaryUser.Status == false)
+            {
+                throw new ArgumentNullException(nameof(user.Email), "Account for temporary user has been activated.");
+            }
+
+
+            using (var session = await client.StartSessionAsync())
+            {
+                // Start the transaction
+                session.StartTransaction();
+
+                try
+                {
+                    await _usersCollection.InsertOneAsync(session, user);
+                    
+                    await _temporaryUsersCollection.UpdateOneAsync(session, Builders<TemporaryUser>.Filter.Eq(tu => tu.Id, temporaryUser.Id), Builders<TemporaryUser>.Update
+                        .Set(tu => tu.Status, temporaryUser.Status)
+                    );
+
+                    NamedDocumentKey newGroupUser = new NamedDocumentKey { Id = user.Id, Name = user.FirstName + " " + user.LastName };
+
+                    await _groupsCollection.UpdateOneAsync(session, Builders<Group>.Filter.Eq(g => g.Id, group.Id), Builders<Group>.Update
+                        .Push("users", newGroupUser)
+                    );
+
+                    // Commit the transaction if all operations succeed
+                    await session.CommitTransactionAsync();
+                }
+                catch (Exception ex)
+                {
+                    // Abort the transaction on error
+                    await session.AbortTransactionAsync();
+                    throw; // Rethrow the exception or handle it as needed
+                }
+            }
+
+
         }
 
         public async Task InsertGroupAsync(Group group)
@@ -196,14 +348,9 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(device), "Device object cannot be null.");
             }
 
-            if (device.Id == null)
+            if (device.DeviceSerialNumber == null)
             {
-                throw new ArgumentNullException(nameof(device), "Device Id cannot be null.");
-            }
-
-            if (device.DeviceId == null)
-            {
-                throw new ArgumentNullException(nameof(device.DeviceId), "Device Id (Serial) cannot be null.");
+                throw new ArgumentNullException(nameof(device.DeviceSerialNumber), "Device Id (Serial) cannot be null.");
             }
 
             if (device.Name == null)
@@ -214,11 +361,6 @@ namespace API_Saf_T_Child.Services
             if (device.Model == null)
             {
                 throw new ArgumentNullException(nameof(device.Model), "Device model cannot be null.");
-            }
-
-            if (device.Car == null)
-            {
-                throw new ArgumentNullException(nameof(device.Car), "Car cannot be null.");
             }
 
             // TODO: Additional validation logic for the Device object, if needed
@@ -306,7 +448,7 @@ namespace API_Saf_T_Child.Services
                 .Set(d => d.Type, updatedDevice.Type)
                 .Set(d => d.Name, updatedDevice.Name)
                 .Set(d => d.Model, updatedDevice.Model)
-                .Set(d => d.DeviceId, updatedDevice.DeviceId)
+                .Set(d => d.DeviceSerialNumber, updatedDevice.DeviceSerialNumber)
                 .Set(d => d.DeviceActivationCode, updatedDevice.DeviceActivationCode)
                 .Set(d => d.Car, updatedDevice.Car)
                 .Set(d => d.Status, updatedDevice.Status)

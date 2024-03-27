@@ -9,7 +9,7 @@ namespace API_Saf_T_Child.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [BsonElement("deviceType")]
         public string Type { get; set; }
@@ -21,10 +21,10 @@ namespace API_Saf_T_Child.Models
         public string Model { get; set; }
         
         [BsonElement("deviceSerial")]
-        public string DeviceId { get; set; }
+        public string DeviceSerialNumber { get; set; }
 
         [BsonElement("deviceStatus")]
-        public string Status { get; set; }
+        public bool Status { get; set; }
 
         [BsonElement("deviceActivationCode")]
         public int DeviceActivationCode { get; set; }

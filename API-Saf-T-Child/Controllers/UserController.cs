@@ -34,10 +34,17 @@ namespace API_Saf_T_Child.Controllers
             return Ok(users);
         }
 
-        [HttpPost("insertUser")]
-        public async Task<IActionResult> Post([FromBody] User user)
+        [HttpPost("insert-user-with-activation-code")]
+        public async Task<IActionResult> Post([FromBody] User user, int deviceActivationCode)
         {
-            await _mongoDBService.InsertUserAsync(user);
+            await _mongoDBService.InsertUserWithActivationCodeAsync(user, deviceActivationCode);
+            return Ok(user);
+        }
+
+        [HttpPost("insert-user-with-group-id")]
+        public async Task<IActionResult> Post([FromBody] User user, string groupId)
+        {
+            await _mongoDBService.InsertUserWithGroupIdAsync(user, groupId);
             return Ok(user);
         }
 

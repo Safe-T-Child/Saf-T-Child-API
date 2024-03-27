@@ -24,6 +24,14 @@ namespace API_Saf_T_Child.Controllers
             return Ok(devices);
         }
 
+        [HttpPost]
+        // [Authorize]
+        public async Task<IActionResult> Post([FromBody] Device device)
+        {
+            await _mongoDBService.InsertDeviceAsync(device);
+            return Ok(device);
+        }
+
         [HttpGet("{id}")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<Device>>> Get(string id)
@@ -33,7 +41,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpGet("by-activation-code/{activationCode}")]
-        public async Task<ActionResult<Device>> GetByActivationCode(long activationCode)
+        public async Task<ActionResult<Device>> GetByActivationCode(int activationCode)
         {
             // Convert activationCode to string to check its length
             string activationCodeStr = activationCode.ToString();
@@ -53,14 +61,6 @@ namespace API_Saf_T_Child.Controllers
                 return NotFound("Device not found.");
             }
 
-            return Ok(device);
-        }
-
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> Post([FromBody] Device device)
-        {
-            await _mongoDBService.InsertDeviceAsync(device);
             return Ok(device);
         }
 

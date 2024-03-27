@@ -2,10 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using API_Saf_T_Child.Models;
 using API_Saf_T_Child.Services;
-using System.Text.RegularExpressions;
-using System.Numerics;
-using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
 
 namespace API_Saf_T_Child.Controllers
 {
@@ -44,7 +40,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpGet("checkPhoneNumber")]
-        public async Task<ActionResult<bool>> CheckPhoneNumberAvailability(User.PhoneNumber phoneNumber)
+        public async Task<ActionResult<bool>> CheckPhoneNumberAvailability(PhoneNumber phoneNumber)
         {
             var users = await _mongoDBService.GetUsersAsync();
             bool isPhoneNumberTaken = users.Any(u => u.PrimaryPhoneNumber.CountryCode == phoneNumber.CountryCode 
