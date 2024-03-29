@@ -195,8 +195,6 @@ namespace API_Saf_T_Child.Services
                 {
                     await _usersCollection.InsertOneAsync(session, user);
 
-
-
                     Group group = new Group();
                     group = group.CreateGroup("Micah's Family");
 
