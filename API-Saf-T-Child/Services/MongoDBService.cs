@@ -136,10 +136,21 @@ namespace API_Saf_T_Child.Services
         #endregion
 
         #region Insert
-        public async Task InsertUserAsync(User user)
+        public async Task InsertUserAsync(User user, int deviceActivationNumber)
         {
             var users = await GetUsersAsync();
             bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
+
+            if(deviceActivationNumber == 0)
+            {
+                throw new ArgumentException(nameof(deviceActivationNumber), "Device Activation Number is required to create a new account.");
+            }
+
+            var device = await GetDeviceByActivationCodeAsync(deviceActivationNumber);
+            if(device == null)
+            {
+                throw new ArgumentException(nameof(device), "Cannot find device. Double check the device activation number and try again.");
+            }
 
             if (isUsernameTaken)
             {
@@ -149,6 +160,16 @@ namespace API_Saf_T_Child.Services
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user), "User object cannot be null.");
+            }
+
+            if (user.FirstName == null)
+            {
+                throw new ArgumentNullException(nameof(user.FirstName), "First name cannot be null.");
+            }
+
+            if (user.LastName == null)
+            {
+                throw new ArgumentNullException(nameof(user.LastName), "Last name cannot be null.");
             }
 
             if (user.UserName == null)
@@ -164,6 +185,49 @@ namespace API_Saf_T_Child.Services
             if (user.Email == null)
             {
                 throw new ArgumentNullException(nameof(user.Email), "Email cannot be null.");
+            }
+
+            if (user.PrimaryPhoneNumber == null)
+            {
+                throw new ArgumentNullException(nameof(user.PrimaryPhoneNumber), "Primary phone number cannot be null.");
+            }
+
+            await _usersCollection.InsertOneAsync(user);
+        }
+
+        public async Task InsertTempUserAsync(User user)
+        {
+            var users = await GetUsersAsync();
+            bool doesUserExist = users.Any(u => u.Email == user.Email);
+
+            if (doesUserExist == true)
+            {
+                throw new ArgumentNullException(nameof(user), "User alraedy exists.");
+            }
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user), "User object cannot be null.");
+            }
+
+            if (user.Id == null)
+            {
+                throw new ArgumentNullException(nameof(user.Id), "User Id cannot be null.");
+            }
+
+            if (user.Email == null)
+            {
+                throw new ArgumentNullException(nameof(user.Email), "Email cannot be null.");
+            }
+
+            if (user.FirstName == null)
+            {
+                throw new ArgumentNullException(nameof(user.FirstName), "First name cannot be null.");
+            }
+
+            if (user.LastName == null)
+            {
+                throw new ArgumentNullException(nameof(user.LastName), "Last name cannot be null.");
             }
 
             if (user.PrimaryPhoneNumber == null)
