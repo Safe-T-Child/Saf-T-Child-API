@@ -38,6 +38,9 @@ namespace API_Saf_T_Child.Models
         [BsonElement("isEmailVerified")]
         public bool isEmailVerified { get; set; }
 
+        [BsonElement("isTempUser")]
+        public bool isTempUser { get; set; }
+
         public class PhoneNumber
         {
             [BsonElement("countryCode")]
