@@ -18,7 +18,7 @@ namespace API_Saf_T_Child.Services
 
         public async Task<bool> SendEmail(string to, string subject, string body)
         {
-            var message = new MailMessage(_mailSettings.Username, to, subject, body);
+            var message = new MailMessage(_mailSettings.Email, to, subject, body);
             message.IsBodyHtml = true;
 
             SmtpClient gmailer = new SmtpClient {
@@ -26,7 +26,7 @@ namespace API_Saf_T_Child.Services
                     Port = _mailSettings.Port,
                     UseDefaultCredentials = false,
                     EnableSsl = _mailSettings.EnableSSL,
-                    Credentials = new System.Net.NetworkCredential(_mailSettings.Username, _mailSettings.Password)
+                    Credentials = new System.Net.NetworkCredential(_mailSettings.Email, _mailSettings.Password)
                 };
 
             try

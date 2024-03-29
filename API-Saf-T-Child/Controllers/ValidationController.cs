@@ -23,15 +23,15 @@ namespace API_Saf_T_Child.Controllers
             _messageService = messageService;
         }
 
-        [HttpGet("checkUsername")]
-        public async Task<ActionResult<bool>> CheckUsernameAvailability(string userName)
-        {
-            var users = await _mongoDBService.GetUsersAsync();
-            bool isUsernameTaken = users.Any(u => u.UserName == userName);
+        //[HttpGet("checkUsername")]
+        //public async Task<ActionResult<bool>> CheckUsernameAvailability(string userName)
+        //{
+        //    var users = await _mongoDBService.GetUsersAsync();
+        //    bool isUsernameTaken = users.Any(u => u.UserName == userName);
 
-            // Return a response based on the availability
-            return Ok(isUsernameTaken);
-        }
+        //    // Return a response based on the availability
+        //    return Ok(isUsernameTaken);
+        //}
 
         [HttpGet("checkEmail")]
         public async Task<ActionResult<(bool,bool)>> CheckEmailAvailability(string email)

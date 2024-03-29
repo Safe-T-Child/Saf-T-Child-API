@@ -32,5 +32,14 @@ namespace API_Saf_T_Child.Models
 
         [BsonElement("users")]
         public List<UserWithRole> Users { get; set; }
+
+        public Group CreateGroup(string name)
+        {
+            return new Group
+            {
+                Name = name,
+                Users = new List<UserWithRole>()
+            };
+        }
     }
 }
