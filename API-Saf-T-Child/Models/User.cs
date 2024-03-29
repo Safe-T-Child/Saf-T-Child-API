@@ -18,9 +18,6 @@ namespace API_Saf_T_Child.Models
         [Required]
         public string LastName { get; set; }
 
-        [BsonElement("userName")]
-        public string UserName { get; set; }
-
         [BsonElement("email")]
         [Required]
         public String Email { get; set; }

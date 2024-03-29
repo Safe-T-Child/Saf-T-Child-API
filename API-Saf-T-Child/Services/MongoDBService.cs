@@ -139,7 +139,7 @@ namespace API_Saf_T_Child.Services
         public async Task InsertUserAsync(User user, int deviceActivationNumber)
         {
             var users = await GetUsersAsync();
-            bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
+            //bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
 
             if(deviceActivationNumber == 0)
             {
@@ -152,10 +152,10 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentException(nameof(device), "Cannot find device. Double check the device activation number and try again.");
             }
 
-            if (isUsernameTaken)
-            {
-                throw new ArgumentNullException(nameof(user.UserName), "Username is already taken.");
-            }
+            //if (isUsernameTaken)
+            //{
+            //    throw new ArgumentNullException(nameof(user.UserName), "Username is already taken.");
+            //}
 
             if (user == null)
             {
@@ -172,10 +172,10 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(user.LastName), "Last name cannot be null.");
             }
 
-            if (user.UserName == null)
-            {
-                throw new ArgumentNullException(nameof(user.UserName), "UserName cannot be null.");
-            }
+            //if (user.UserName == null)
+            //{
+            //    throw new ArgumentNullException(nameof(user.UserName), "UserName cannot be null.");
+            //}
 
             if (user.Id == null)
             {
@@ -344,12 +344,12 @@ namespace API_Saf_T_Child.Services
         public async Task<bool> UpdateUserAsync(string id, User user)
         {
             var users = await GetUsersAsync();
-            bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
+            //bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
 
-            if (isUsernameTaken)
-            {
-                throw new ArgumentNullException(nameof(user.UserName), "Username is already taken.");
-            }
+            //if (isUsernameTaken)
+            //{
+            //    throw new ArgumentNullException(nameof(user.UserName), "Username is already taken.");
+            //}
 
             if (string.IsNullOrEmpty(id))
             {
@@ -365,7 +365,7 @@ namespace API_Saf_T_Child.Services
             var filter = Builders<User>.Filter.Eq("_id", ObjectId.Parse(id));
 
             var update = Builders<User>.Update
-                .Set("userName", user.UserName)
+                //.Set("userName", user.UserName)
                 .Set("firstName", user.FirstName)
                 .Set("lastName", user.LastName)
                 .Set("email", user.Email)
