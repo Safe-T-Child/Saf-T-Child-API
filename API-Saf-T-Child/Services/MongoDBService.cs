@@ -235,6 +235,9 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(user.PrimaryPhoneNumber), "Primary phone number cannot be null.");
             }
 
+            user.isEmailVerified = false;
+            user.isTempUser = true;
+
             await _usersCollection.InsertOneAsync(user);
         }
 
