@@ -233,11 +233,6 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(vehicle), "Vehicle object cannot be null.");
             }
 
-            if (vehicle.Id == null)
-            {
-                throw new ArgumentNullException(nameof(vehicle.Owner), "Missing vehicle owner. This field cannot be null.");
-            }
-
             if (vehicle.Owner == null)
             {
                 throw new ArgumentNullException(nameof(vehicle.Owner), "Missing vehicle owner. This field cannot be null.");
