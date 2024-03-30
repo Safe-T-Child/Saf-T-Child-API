@@ -5,6 +5,7 @@ using MongoDB.Bson;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 
 namespace API_Saf_T_Child.Services
 {
@@ -139,8 +140,7 @@ namespace API_Saf_T_Child.Services
         #region Insert
         public async Task InsertUserAsync(User user, int deviceActivationNumber)
         {
-            var users = await GetUsersAsync();
-            bool isEmailTaken = users.Any(u => u.Email == user.Email);
+            bool isEmailTaken = await IsEmailTakenAsync(user.Email);
 
             if(deviceActivationNumber == 0)
             {
@@ -203,6 +203,7 @@ namespace API_Saf_T_Child.Services
                     device.Owner = new NamedDocumentKey { Id = user.Id, Name = name };
 
                     await _groupsCollection.InsertOneAsync(session, group);
+
                     // Update Owner and Status of the device
                     await _devicesCollection.UpdateOneAsync(session, Builders<Device>.Filter.Eq(d => d.Id, device.Id), Builders<Device>.Update
                         .Set(d => d.Owner, device.Owner)
@@ -220,8 +221,6 @@ namespace API_Saf_T_Child.Services
                     throw; // Rethrow the exception or handle it as needed
                 }
             }
-
-            await _usersCollection.InsertOneAsync(user);
         }
 
         public async Task InsertTempUserAsync(User user)
@@ -514,5 +513,15 @@ namespace API_Saf_T_Child.Services
             return result.DeletedCount > 0;
         }
         #endregion 
+    
+        #region Validation
+        public async Task<bool> IsEmailTakenAsync(string email)
+        {
+            // Look for a user with the same email
+            var filter = Builders<User>.Filter.Eq("email", email);
+            var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
+            return user != null;
+        }
+        #endregion
     }
 }

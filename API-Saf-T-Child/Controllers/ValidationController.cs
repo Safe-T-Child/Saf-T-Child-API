@@ -51,7 +51,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpGet("checkPhoneNumber")]
-        public async Task<ActionResult<bool>> CheckPhoneNumberAvailability(User.PhoneNumber phoneNumber)
+        public async Task<ActionResult<bool>> CheckPhoneNumberAvailability(PhoneNumber phoneNumber)
         {
             var users = await _mongoDBService.GetUsersAsync();
             bool isPhoneNumberTaken = users.Any(u => u.PrimaryPhoneNumber.CountryCode == phoneNumber.CountryCode 
