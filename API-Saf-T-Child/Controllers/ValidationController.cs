@@ -23,15 +23,15 @@ namespace API_Saf_T_Child.Controllers
             _messageService = messageService;
         }
 
-        [HttpGet("checkUsername")]
-        public async Task<ActionResult<bool>> CheckUsernameAvailability(string userName)
-        {
-            var users = await _mongoDBService.GetUsersAsync();
-            bool isUsernameTaken = users.Any(u => u.UserName == userName);
+        //[HttpGet("checkUsername")]
+        //public async Task<ActionResult<bool>> CheckUsernameAvailability(string userName)
+        //{
+        //    var users = await _mongoDBService.GetUsersAsync();
+        //    bool isUsernameTaken = users.Any(u => u.UserName == userName);
 
-            // Return a response based on the availability
-            return Ok(isUsernameTaken);
-        }
+        //    // Return a response based on the availability
+        //    return Ok(isUsernameTaken);
+        //}
 
         [HttpGet("checkEmail")]
         public async Task<ActionResult<(bool,bool)>> CheckEmailAvailability(string email)
@@ -51,7 +51,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpGet("checkPhoneNumber")]
-        public async Task<ActionResult<bool>> CheckPhoneNumberAvailability(User.PhoneNumber phoneNumber)
+        public async Task<ActionResult<bool>> CheckPhoneNumberAvailability(PhoneNumber phoneNumber)
         {
             var users = await _mongoDBService.GetUsersAsync();
             bool isPhoneNumberTaken = users.Any(u => u.PrimaryPhoneNumber.CountryCode == phoneNumber.CountryCode 
