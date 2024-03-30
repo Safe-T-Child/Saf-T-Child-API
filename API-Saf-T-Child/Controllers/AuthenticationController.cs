@@ -22,12 +22,12 @@ namespace API_Saf_T_Child.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] Login login)
         {
-            if (login == null || login.Username == null || login.Password == null)
+            if (login == null || login.Email == null || login.Password == null)
             {
                 return BadRequest("Invalid client request");
             }
 
-            var user = _mongoDBService.LoginUserAsync(login.Username, login.Password).Result;
+            var user = _mongoDBService.LoginUserAsync(login.Email, login.Password).Result;
 
             if(user == null)
             {
@@ -44,7 +44,7 @@ namespace API_Saf_T_Child.Controllers
                 expires: DateTime.Now.AddHours(2),
                 signingCredentials: signinCredentials,
                 claims : new List<Claim>{
-                    new Claim("username", user.UserName),
+                    //new Claim("username", user.UserName),
                     new Claim("userId", user.Id),
                     new Claim("email", user.Email),
                     new Claim("firstName", user.FirstName),

@@ -24,7 +24,7 @@ namespace API_Saf_T_Child.Models
         public string DeviceId { get; set; }
 
         [BsonElement("deviceStatus")]
-        public string Status { get; set; }
+        public bool Status { get; set; }
 
         [BsonElement("deviceActivationCode")]
         public int DeviceActivationCode { get; set; }

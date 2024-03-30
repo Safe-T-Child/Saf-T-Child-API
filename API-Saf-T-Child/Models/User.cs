@@ -18,9 +18,6 @@ namespace API_Saf_T_Child.Models
         [Required]
         public string LastName { get; set; }
 
-        [BsonElement("userName")]
-        public string UserName { get; set; }
-
         [BsonElement("email")]
         [Required]
         public String Email { get; set; }
@@ -41,22 +38,7 @@ namespace API_Saf_T_Child.Models
         [BsonElement("isTempUser")]
         public bool isTempUser { get; set; }
 
-        public class PhoneNumber
-        {
-            [BsonElement("countryCode")]
-            [RegularExpression("^[0-9]+$")]
-            [Required]
-            public int CountryCode { get; set; }
-
-            [BsonElement("phoneNumber")]
-            [RegularExpression("^[0-9]+$")]
-            [Required]
-            public long PhoneNumberValue { get; set; }
-        }
-
-        [BsonElement("Name")]
-        [Required]
-        public string? Name { get; set; }
+        
 
     }
 }

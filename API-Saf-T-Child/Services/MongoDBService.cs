@@ -5,6 +5,7 @@ using MongoDB.Bson;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 
 namespace API_Saf_T_Child.Services
 {
@@ -14,10 +15,11 @@ namespace API_Saf_T_Child.Services
         private readonly IMongoCollection<Group> _groupsCollection;
         private readonly IMongoCollection<Device> _devicesCollection;
         private readonly IMongoCollection<Vehicle> _vehiclesCollection;
+        private readonly MongoClient client;
 
         public MongoDBService(IOptions<MongoDBSettings> mongoDBSettings)
         {
-            MongoClient client = new MongoClient(mongoDBSettings.Value.ConnectionURI);
+            client = new MongoClient(mongoDBSettings.Value.ConnectionURI);
             IMongoDatabase database = client.GetDatabase(mongoDBSettings.Value.DatabaseName);
             _usersCollection = database.GetCollection<User>(mongoDBSettings.Value.UsersCollection);
             _groupsCollection = database.GetCollection<Group>(mongoDBSettings.Value.GroupsCollection);
@@ -43,9 +45,9 @@ namespace API_Saf_T_Child.Services
             return user;
         }
 
-        public async Task<User> LoginUserAsync(string username, string password)
+        public async Task<User> LoginUserAsync(string email, string password)
         {
-            var filter = Builders<User>.Filter.Eq("userName", username);
+            var filter = Builders<User>.Filter.Eq("email", email);
             var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
 
             if (user == null)
@@ -136,14 +138,25 @@ namespace API_Saf_T_Child.Services
         #endregion
 
         #region Insert
-        public async Task InsertUserAsync(User user)
+        public async Task InsertUserAsync(User user, int deviceActivationNumber)
         {
-            var users = await GetUsersAsync();
-            bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
+            bool isEmailTaken = await IsEmailTakenAsync(user.Email);
 
-            if (isUsernameTaken)
+            if(deviceActivationNumber == 0)
             {
-                throw new ArgumentNullException(nameof(user.UserName), "Username is already taken.");
+                throw new ArgumentException(nameof(deviceActivationNumber), "Device Activation Number is required to create a new account.");
+            }
+
+            var device = await GetDeviceByActivationCodeAsync(deviceActivationNumber);
+
+            if(device == null)
+            {
+                throw new ArgumentException(nameof(device), "Cannot find device. Double check the device activation number and try again.");
+            }
+
+            if (isEmailTaken)
+            {
+                throw new ArgumentNullException(nameof(user.Email), "Email is already being used.");
             }
 
             if (user == null)
@@ -151,14 +164,14 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(user), "User object cannot be null.");
             }
 
-            if (user.UserName == null)
+            if (user.FirstName == null)
             {
-                throw new ArgumentNullException(nameof(user.UserName), "UserName cannot be null.");
+                throw new ArgumentNullException(nameof(user.FirstName), "First name cannot be null.");
             }
 
-            if (user.Id == null)
+            if (user.LastName == null)
             {
-                throw new ArgumentNullException(nameof(user.Id), "User Id cannot be null.");
+                throw new ArgumentNullException(nameof(user.LastName), "Last name cannot be null.");
             }
 
             if (user.Email == null)
@@ -170,6 +183,83 @@ namespace API_Saf_T_Child.Services
             {
                 throw new ArgumentNullException(nameof(user.PrimaryPhoneNumber), "Primary phone number cannot be null.");
             }
+
+            var name = user.FirstName + " " + user.LastName;
+
+            using (var session = await client.StartSessionAsync())
+            {
+                // Start the transaction
+                session.StartTransaction();
+
+                try
+                {
+                    await _usersCollection.InsertOneAsync(session, user);
+
+                    Group group = new Group();
+                    group = group.CreateGroup("Micah's Family");
+
+                    group.Owner = new NamedDocumentKey { Id = user.Id, Name = name };
+
+                    device.Owner = new NamedDocumentKey { Id = user.Id, Name = name };
+
+                    await _groupsCollection.InsertOneAsync(session, group);
+
+                    // Update Owner and Status of the device
+                    await _devicesCollection.UpdateOneAsync(session, Builders<Device>.Filter.Eq(d => d.Id, device.Id), Builders<Device>.Update
+                        .Set(d => d.Owner, device.Owner)
+                        .Set(d => d.Status, true)
+                        .Set(d => d.Group, new NamedDocumentKey { Id = group.Id, Name = group.Name })
+                    );
+
+                    // Commit the transaction if all operations succeed
+                    await session.CommitTransactionAsync();
+                }
+                catch (Exception ex)
+                {
+                    // Abort the transaction on error
+                    await session.AbortTransactionAsync();
+                    throw; // Rethrow the exception or handle it as needed
+                }
+            }
+        }
+
+        public async Task InsertTempUserAsync(User user)
+        {
+            var users = await GetUsersAsync();
+            bool doesUserExist = users.Any(u => u.Email == user.Email);
+
+            if (doesUserExist == true)
+            {
+                throw new ArgumentNullException(nameof(user), "User alraedy exists.");
+            }
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user), "User object cannot be null.");
+            }
+
+            if (user.Email == null)
+            {
+                throw new ArgumentNullException(nameof(user.Email), "Email cannot be null.");
+            }
+
+            if (user.FirstName == null)
+            {
+                throw new ArgumentNullException(nameof(user.FirstName), "First name cannot be null.");
+            }
+
+            if (user.LastName == null)
+            {
+                throw new ArgumentNullException(nameof(user.LastName), "Last name cannot be null.");
+            }
+
+            if (user.PrimaryPhoneNumber == null)
+            {
+                throw new ArgumentNullException(nameof(user.PrimaryPhoneNumber), "Primary phone number cannot be null.");
+            }
+
+            user.isEmailVerified = false;
+            user.isTempUser = true;
 
             await _usersCollection.InsertOneAsync(user);
         }
@@ -277,12 +367,12 @@ namespace API_Saf_T_Child.Services
         public async Task<bool> UpdateUserAsync(string id, User user)
         {
             var users = await GetUsersAsync();
-            bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
+            //bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
 
-            if (isUsernameTaken)
-            {
-                throw new ArgumentNullException(nameof(user.UserName), "Username is already taken.");
-            }
+            //if (isUsernameTaken)
+            //{
+            //    throw new ArgumentNullException(nameof(user.UserName), "Username is already taken.");
+            //}
 
             if (string.IsNullOrEmpty(id))
             {
@@ -298,7 +388,7 @@ namespace API_Saf_T_Child.Services
             var filter = Builders<User>.Filter.Eq("_id", ObjectId.Parse(id));
 
             var update = Builders<User>.Update
-                .Set("userName", user.UserName)
+                //.Set("userName", user.UserName)
                 .Set("firstName", user.FirstName)
                 .Set("lastName", user.LastName)
                 .Set("email", user.Email)
@@ -423,5 +513,15 @@ namespace API_Saf_T_Child.Services
             return result.DeletedCount > 0;
         }
         #endregion 
+    
+        #region Validation
+        public async Task<bool> IsEmailTakenAsync(string email)
+        {
+            // Look for a user with the same email
+            var filter = Builders<User>.Filter.Eq("email", email);
+            var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
+            return user != null;
+        }
+        #endregion
     }
 }
