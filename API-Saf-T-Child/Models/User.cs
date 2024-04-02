@@ -8,7 +8,7 @@ namespace API_Saf_T_Child.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [BsonElement("firstName")]
         [Required]
