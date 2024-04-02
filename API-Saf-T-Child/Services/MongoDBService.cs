@@ -185,6 +185,7 @@ namespace API_Saf_T_Child.Services
             }
 
             var name = user.FirstName + " " + user.LastName;
+            user.isTempUser = false;
 
             using (var session = await client.StartSessionAsync())
             {
@@ -196,7 +197,7 @@ namespace API_Saf_T_Child.Services
                     await _usersCollection.InsertOneAsync(session, user);
 
                     Group group = new Group();
-                    group = group.CreateGroup("Micah's Family");
+                    group = group.CreateGroup("Family Name");
 
                     group.Owner = new NamedDocumentKey { Id = user.Id, Name = name };
 
@@ -261,7 +262,25 @@ namespace API_Saf_T_Child.Services
             user.isEmailVerified = false;
             user.isTempUser = true;
 
-            await _usersCollection.InsertOneAsync(user);
+            using (var session = await client.StartSessionAsync())
+            {
+                // Start the transaction
+                session.StartTransaction();
+
+                try
+                {
+                    await _usersCollection.InsertOneAsync(session, user);
+
+                    // Commit the transaction if all operations succeed
+                    await session.CommitTransactionAsync();
+                }
+                catch (Exception ex)
+                {
+                    // Abort the transaction on error
+                    await session.AbortTransactionAsync();
+                    throw; // Rethrow the exception or handle it as needed
+                }
+            }
         }
 
         public async Task InsertGroupAsync(Group group)
