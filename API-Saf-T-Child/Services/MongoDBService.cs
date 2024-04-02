@@ -406,8 +406,11 @@ namespace API_Saf_T_Child.Services
                 .Set("firstName", user.FirstName)
                 .Set("lastName", user.LastName)
                 .Set("email", user.Email)
-                .Set("primaryPhoneNumer", user.PrimaryPhoneNumber)
-                .Set("secondaryPhoneNumbers", user.SecondaryPhoneNumbers);
+                .Set("primaryPhoneNumber", user.PrimaryPhoneNumber)
+                .Set("secondaryPhoneNumbers", user.SecondaryPhoneNumbers)
+                .Set("password", user.Password)
+                .Set("isEmailVerified", user.isEmailVerified)
+                .Set("isTempUser", user.isTempUser);
 
             var result = await _usersCollection.UpdateOneAsync(filter, update);
 
