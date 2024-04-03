@@ -2,10 +2,7 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using MongoDB.Bson;
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
+using BCrypt.Net;
 
 namespace API_Saf_T_Child.Services
 {
@@ -48,16 +45,12 @@ namespace API_Saf_T_Child.Services
             return user;
         }
 
-        public async Task<User> LoginUserAsync(string email, string password)
+        public async Task<User> LoginUserAsync(string email)
         {
             var filter = Builders<User>.Filter.Eq("email", email);
             var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
 
             if (user == null)
-            {
-                return null;
-            }
-            if (user.Password != password)
             {
                 return null;
             }
@@ -143,6 +136,11 @@ namespace API_Saf_T_Child.Services
         #region Insert
         public async Task InsertUserAsync(User user, int deviceActivationNumber)
         {
+            if(user == null)
+            {
+                throw new ArgumentNullException(nameof(user), "User object cannot be null.");
+            }
+
             bool isEmailTaken = await IsEmailTakenAsync(user.Email);
 
             if(deviceActivationNumber == 0)
@@ -160,11 +158,6 @@ namespace API_Saf_T_Child.Services
             if (isEmailTaken)
             {
                 throw new ArgumentNullException(nameof(user.Email), "Email is already being used.");
-            }
-
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user), "User object cannot be null.");
             }
 
             if (user.FirstName == null)
@@ -189,6 +182,10 @@ namespace API_Saf_T_Child.Services
 
             var name = user.FirstName + " " + user.LastName;
             user.isTempUser = false;
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            user.Password = hashedPassword;
+            user.isEmailVerified = false;
 
             using (var session = await client.StartSessionAsync())
             {
@@ -261,6 +258,9 @@ namespace API_Saf_T_Child.Services
             {
                 throw new ArgumentNullException(nameof(user.PrimaryPhoneNumber), "Primary phone number cannot be null.");
             }
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            user.Password = hashedPassword;
 
             user.isEmailVerified = false;
             user.isTempUser = true;
