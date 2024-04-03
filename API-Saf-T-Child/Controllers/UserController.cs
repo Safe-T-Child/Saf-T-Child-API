@@ -106,5 +106,20 @@ namespace API_Saf_T_Child.Controllers
                 return BadRequest("Invalid User");
             }
         }
+        
+
+        [HttpGet("getRoles")]
+        public async Task<ActionResult<IEnumerable<string>>> GetRoles()
+        {
+            var roles = await _mongoDBService.GetRolesAsync();
+            return Ok(roles);
+        }
+
+        [HttpPost("insertRole")]
+        public async Task<IActionResult> InsertNewRole([FromBody] Role role)
+        {
+            await _mongoDBService.InsertRoleAsync(role);
+            return Ok(role);
+        }
     }
 }
