@@ -17,6 +17,9 @@ namespace API_Saf_T_Child.Models
 
         [BsonElement("role")]
         public string Role { get; set; }
+        
+        [BsonElement("acceptedInvite")]
+        public bool AcceptedInvite { get; set; }
     }
     public class Group
     {
