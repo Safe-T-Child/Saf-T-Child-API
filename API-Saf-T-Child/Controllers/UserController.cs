@@ -109,6 +109,7 @@ namespace API_Saf_T_Child.Controllers
         
 
         [HttpGet("getRoles")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<string>>> GetRoles()
         {
             var roles = await _mongoDBService.GetRolesAsync();
@@ -116,6 +117,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpPost("insertRole")]
+        [Authorize]
         public async Task<IActionResult> InsertNewRole([FromBody] Role role)
         {
             await _mongoDBService.InsertRoleAsync(role);
