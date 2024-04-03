@@ -15,6 +15,8 @@ namespace API_Saf_T_Child.Services
         private readonly IMongoCollection<Group> _groupsCollection;
         private readonly IMongoCollection<Device> _devicesCollection;
         private readonly IMongoCollection<Vehicle> _vehiclesCollection;
+
+        private readonly IMongoCollection<Role> _rolesCollection;
         private readonly MongoClient client;
 
         public MongoDBService(IOptions<MongoDBSettings> mongoDBSettings)
@@ -25,6 +27,7 @@ namespace API_Saf_T_Child.Services
             _groupsCollection = database.GetCollection<Group>(mongoDBSettings.Value.GroupsCollection);
             _devicesCollection = database.GetCollection<Device>(mongoDBSettings.Value.DevicesCollection);
             _vehiclesCollection = database.GetCollection<Vehicle>(mongoDBSettings.Value.VehiclesCollection);
+            _rolesCollection = database.GetCollection<Role>(mongoDBSettings.Value.RolesCollection);
         }
 
         # region Users
@@ -427,6 +430,11 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(group), "Group object cannot be null.");
             }
 
+            if(group.Users.All(u => u.Role != RoleType.Admin || u.Role != RoleType.Member))
+            {
+                throw new ArgumentException(nameof(group.Users), "Invalid role type. Role type must be either 'Admin' or 'User'.");
+            }
+
             var filter = Builders<Group>.Filter.Eq(g => g.Id, id);
             var update = Builders<Group>.Update
                 .Set(g => g.Name, group.Name)
@@ -537,5 +545,40 @@ namespace API_Saf_T_Child.Services
             return user != null;
         }
         #endregion
+
+        #region Roles
+        public async Task<List<Role>> GetRolesAsync()
+        {
+            var roles = await _rolesCollection.Find(_ => true).ToListAsync();
+            return roles;
+        }  
+
+        public async Task InsertRoleAsync(Role role)
+        {
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role), "Role object cannot be null.");
+            }
+
+            if (RoleType.Admin != role.Name && RoleType.Member != role.Name )
+            {
+                throw new ArgumentException(nameof(role.Name), "Role name is invalid.");
+            }
+
+            if (role.Permissions == null)
+            {
+                throw new ArgumentNullException(nameof(role.Permissions), "Role permissions cannot be null.");
+            }
+
+            if (role.Description == null)
+            {
+                throw new ArgumentNullException(nameof(role.Description), "Role description cannot be null.");
+            }
+
+            await _rolesCollection.InsertOneAsync(role);
+        }
+
+        #endregion
+    
     }
 }
