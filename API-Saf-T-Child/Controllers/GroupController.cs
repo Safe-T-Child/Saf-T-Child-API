@@ -52,7 +52,7 @@ namespace API_Saf_T_Child.Controllers
 
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> UpdateUser(string id, [FromBody] Group group)
+        public async Task<IActionResult> UpdateGroup(string id, [FromBody] Group group)
         {
             var result = await _mongoDBService.UpdateGroupAsync(id, group);
 

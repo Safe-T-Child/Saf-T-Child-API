@@ -27,13 +27,20 @@ namespace API_Saf_T_Child.Controllers
                 return BadRequest("Invalid client request");
             }
 
-            var user = _mongoDBService.LoginUserAsync(login.Email, login.Password).Result;
+            var user = _mongoDBService.LoginUserAsync(login.Email).Result;
 
             if(user == null)
             {
                 return NotFound();
             }
 
+            var storedHash = user.Password;
+
+            if (!BCrypt.Net.BCrypt.Verify(login.Password, storedHash))
+            {
+                // wrong email or password
+                return Unauthorized();
+            }
 
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
