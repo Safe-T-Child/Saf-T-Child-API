@@ -30,7 +30,15 @@ namespace API_Saf_T_Child.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<User>>> Get(string id)
         {
-            var users = await _mongoDBService.GetUserByIdAsync(id);
+            var user = await _mongoDBService.GetUserByIdAsync(id);
+            return Ok(user);
+        }
+
+        [HttpGet("getUserByManyIds")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<User>>> Get(List<string> ids)
+        {
+            var users = await _mongoDBService.GetUsersByIdsAsync(ids);
             return Ok(users);
         }
 
