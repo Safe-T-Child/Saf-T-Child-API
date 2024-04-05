@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace API_Saf_T_Child.Controllers
 {
@@ -61,16 +63,30 @@ namespace API_Saf_T_Child.Controllers
             return Ok(isPhoneNumberTaken);
         }
 
+        [Authorize]
         [HttpGet("verifyEmailAddress")]
-        public async Task<ActionResult<bool>> VerifyEmailAddress(string id)
+        public async Task<ActionResult<bool>> VerifyEmailAddress(string tokenstring)
         {
-            var user = await _mongoDBService.GetUserByIdAsync(id);
+            //decode the token
+              var handler = new JwtSecurityTokenHandler();
+        
+            // Convert the tokenString into a JwtSecurityToken
+            var jsonToken = handler.ReadToken(tokenstring) as JwtSecurityToken;
+            
+            // Extract the "id" claim from the JWT token
+            var idClaim = jsonToken?.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+
+            if (idClaim == null){
+                return BadRequest("Invalid Token");
+            }
+            
+            var user = await _mongoDBService.GetUserByIdAsync(idClaim);
             if (user != null)
             {
                 user.isEmailVerified = true;
             }
             return Ok();
-        }
+            }
 
         [HttpPost("sendVerificationEmail")]
         public async Task<IActionResult> SendVerificationEmail(string id)
