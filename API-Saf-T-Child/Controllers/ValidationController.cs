@@ -8,6 +8,11 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace API_Saf_T_Child.Controllers
 {
@@ -17,10 +22,12 @@ namespace API_Saf_T_Child.Controllers
         // Private field representing an instance of the MongoDBService class, which will be used to interact with the MongoDB database.
         private readonly MongoDBService _mongoDBService;
         private readonly MessageService _messageService;
+        private readonly IConfiguration _configuration;
 
         // This constructor injects an instance of MongoDBService into the controller.
-        public ValidationController(MongoDBService mongoDBService, MessageService messageService)
+        public ValidationController(IConfiguration configuration, MongoDBService mongoDBService, MessageService messageService)
         {
+            _configuration = configuration;
             _mongoDBService = mongoDBService;
             _messageService = messageService;
         }
@@ -67,45 +74,158 @@ namespace API_Saf_T_Child.Controllers
         [HttpGet("verifyEmailAddress")]
         public async Task<ActionResult<bool>> VerifyEmailAddress(string tokenstring)
         {
-            //decode the token
-              var handler = new JwtSecurityTokenHandler();
-        
-            // Convert the tokenString into a JwtSecurityToken
-            var jsonToken = handler.ReadToken(tokenstring) as JwtSecurityToken;
-            
-            // Extract the "id" claim from the JWT token
-            var idClaim = jsonToken?.Claims.FirstOrDefault(claim => claim.Type == "id")?.Value;
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.ReadToken(tokenstring) as JwtSecurityToken;
 
-            if (idClaim == null){
-                return BadRequest("Invalid Token");
-            }
-            
-            var user = await _mongoDBService.GetUserByIdAsync(idClaim);
-            if (user != null)
+            // Step 2: Validate token signature
+            var validationParameters = new TokenValidationParameters
             {
-                user.isEmailVerified = true;
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+
+            SecurityToken validatedToken;
+            try
+            {
+                tokenHandler.ValidateToken(tokenstring, validationParameters, out validatedToken);
             }
-            return Ok();
+            catch (SecurityTokenValidationException)
+            {
+                return BadRequest("Token validation failed. Invalid signature or other validation error.");
             }
+
+            // Step 3: Check if the token is not expired
+            if (token.ValidTo < DateTime.UtcNow)
+            {
+                return BadRequest("Token is Expired");
+            }
+
+            var userIdClaim = token.Claims.FirstOrDefault(claim => claim.Type == "userId");
+
+            if (userIdClaim != null)
+            {
+                string userIdValue = userIdClaim.Value;
+                var user = await _mongoDBService.GetUserByIdAsync(userIdValue);
+                if (user != null)
+                {
+                    user.isEmailVerified = true;
+                    var result = await _mongoDBService.UpdateUserAsync(userIdValue, user);
+
+                    if (result)
+                    {
+                        return Ok(user);
+                    }
+                    else
+                    {
+                        return NotFound();
+                    }
+                }
+                else
+                {
+                    return BadRequest("User with ID not found.");
+                }
+                
+            }
+            else
+            {
+                return BadRequest("User ID claim not found.");
+            }
+        }
 
         [HttpPost("sendVerificationEmail")]
         public async Task<IActionResult> SendVerificationEmail(string id)
         {
             var user = await _mongoDBService.GetUserByIdAsync(id);
-            if(user != null && user.Email != null && id != null)
+
+            if (user != null)
             {
-                string linkUrl = "http://localhost:4200/api/validation/verifyEmailAddress/" + id;
-                string body = "<p align= 'center'>Thank You for singing up for Saf-T-Child! </br> " + 
-                                "Click the link below to verify your email: </br> " + 
-                                " <a href='" + linkUrl + "'>Verify your Email</a></p>";
-                bool success = await _messageService.SendEmail(user.Email, "Verify your email with Saf-T-Child", body);
-                if (success)
+                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+
+                var tokeOptions = new JwtSecurityToken(
+                    issuer: _configuration["Jwt:Issuer"],
+                    audience: _configuration["Jwt:Issuer"],
+                    expires: DateTime.Now.AddHours(24),
+                    signingCredentials: signinCredentials,
+                    claims: new List<Claim>{
+                    new Claim("userId", user.Id)
+                    }
+                );
+
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+
+                if (user != null && user.Email != null && id != null)
                 {
-                    return Ok(success);
+                    string linkUrl = "http://localhost:4200/api/validation/verifyEmailAddress/" + tokenString;
+                    string body = "<p align= 'center'>Thank You for singing up for Saf-T-Child! </br> " +
+                                    "Click the link below to verify your email: </br> " +
+                                    " <a href='" + linkUrl + "'>Verify your Email</a></p>";
+                    bool success = await _messageService.SendEmail(user.Email, "Verify your email with Saf-T-Child", body);
+                    if (success)
+                    {
+                        return Ok(success);
+                    }
+                    else
+                    {
+                        return BadRequest("SMTP Failed");
+                    }
                 }
                 else
                 {
-                    return BadRequest("SMTP Failed");
+                    return BadRequest("Invalid User");
+                }
+            }
+            else
+            {
+                return BadRequest("Invalid User");
+            }
+
+        }
+        
+        [HttpPost("sendPasswordReset")]
+        public async Task<IActionResult> SendPaswordResetEmail(string id)
+        {
+            var user = await _mongoDBService.GetUserByIdAsync(id);
+
+            if (user != null)
+            {
+                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+
+                var tokeOptions = new JwtSecurityToken(
+                    issuer: _configuration["Jwt:Issuer"],
+                    audience: _configuration["Jwt:Issuer"],
+                    expires: DateTime.Now.AddHours(24),
+                    signingCredentials: signinCredentials,
+                    claims: new List<Claim>{
+                    new Claim("userId", user.Id),
+                    new Claim("resetPassword", "true"),
+                    }
+                );
+
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+
+                if (user != null && user.Email != null && id != null)
+                {
+                    string linkUrl = "http://localhost:4200/api/validation/verifyEmailAddress/" + tokenString;
+                    string body = "<p align= 'center'>Saf-T-Child Password Reset Request </br> " +
+                                    "Click the link below to change your password: </br> " +
+                                    " <a href='" + linkUrl + "'>Change Your Password</a></p>";
+                    bool success = await _messageService.SendEmail(user.Email, "Saf-T-Child Password Reset Request", body);
+                    if (success)
+                    {
+                        return Ok(success);
+                    }
+                    else
+                    {
+                        return BadRequest("SMTP Failed");
+                    }
+                }
+                else
+                {
+                    return BadRequest("Invalid User");
                 }
             }
             else
@@ -113,6 +233,7 @@ namespace API_Saf_T_Child.Controllers
                 return BadRequest("Invalid User");
             }
         }
+
         [HttpGet("checkGroupName")]
         public async Task<ActionResult<bool>> CheckGroupNameAvailability(string userId, string groupName)
         {

@@ -2,10 +2,7 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using MongoDB.Bson;
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
+using BCrypt.Net;
 
 namespace API_Saf_T_Child.Services
 {
@@ -15,6 +12,8 @@ namespace API_Saf_T_Child.Services
         private readonly IMongoCollection<Group> _groupsCollection;
         private readonly IMongoCollection<Device> _devicesCollection;
         private readonly IMongoCollection<Vehicle> _vehiclesCollection;
+
+        private readonly IMongoCollection<Role> _rolesCollection;
         private readonly MongoClient client;
 
         public MongoDBService(IOptions<MongoDBSettings> mongoDBSettings)
@@ -25,6 +24,7 @@ namespace API_Saf_T_Child.Services
             _groupsCollection = database.GetCollection<Group>(mongoDBSettings.Value.GroupsCollection);
             _devicesCollection = database.GetCollection<Device>(mongoDBSettings.Value.DevicesCollection);
             _vehiclesCollection = database.GetCollection<Vehicle>(mongoDBSettings.Value.VehiclesCollection);
+            _rolesCollection = database.GetCollection<Role>(mongoDBSettings.Value.RolesCollection);
         }
 
         # region Users
@@ -45,16 +45,12 @@ namespace API_Saf_T_Child.Services
             return user;
         }
 
-        public async Task<User> LoginUserAsync(string email, string password)
+        public async Task<User> LoginUserAsync(string email)
         {
             var filter = Builders<User>.Filter.Eq("email", email);
             var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
 
             if (user == null)
-            {
-                return null;
-            }
-            if (user.Password != password)
             {
                 return null;
             }
@@ -140,6 +136,11 @@ namespace API_Saf_T_Child.Services
         #region Insert
         public async Task InsertUserAsync(User user, int deviceActivationNumber)
         {
+            if(user == null)
+            {
+                throw new ArgumentNullException(nameof(user), "User object cannot be null.");
+            }
+
             bool isEmailTaken = await IsEmailTakenAsync(user.Email);
 
             if(deviceActivationNumber == 0)
@@ -157,11 +158,6 @@ namespace API_Saf_T_Child.Services
             if (isEmailTaken)
             {
                 throw new ArgumentNullException(nameof(user.Email), "Email is already being used.");
-            }
-
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user), "User object cannot be null.");
             }
 
             if (user.FirstName == null)
@@ -186,6 +182,10 @@ namespace API_Saf_T_Child.Services
 
             var name = user.FirstName + " " + user.LastName;
             user.isTempUser = false;
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            user.Password = hashedPassword;
+            user.isEmailVerified = false;
 
             using (var session = await client.StartSessionAsync())
             {
@@ -258,6 +258,9 @@ namespace API_Saf_T_Child.Services
             {
                 throw new ArgumentNullException(nameof(user.PrimaryPhoneNumber), "Primary phone number cannot be null.");
             }
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            user.Password = hashedPassword;
 
             user.isEmailVerified = false;
             user.isTempUser = true;
@@ -406,8 +409,11 @@ namespace API_Saf_T_Child.Services
                 .Set("firstName", user.FirstName)
                 .Set("lastName", user.LastName)
                 .Set("email", user.Email)
-                .Set("primaryPhoneNumer", user.PrimaryPhoneNumber)
-                .Set("secondaryPhoneNumbers", user.SecondaryPhoneNumbers);
+                .Set("primaryPhoneNumber", user.PrimaryPhoneNumber)
+                .Set("secondaryPhoneNumbers", user.SecondaryPhoneNumbers)
+                .Set("password", user.Password)
+                .Set("isEmailVerified", user.isEmailVerified)
+                .Set("isTempUser", user.isTempUser);
 
             var result = await _usersCollection.UpdateOneAsync(filter, update);
 
@@ -425,6 +431,11 @@ namespace API_Saf_T_Child.Services
             if (group == null)
             {
                 throw new ArgumentNullException(nameof(group), "Group object cannot be null.");
+            }
+
+            if(group.Users.All(u => u.Role != RoleType.Admin || u.Role != RoleType.Member))
+            {
+                throw new ArgumentException(nameof(group.Users), "Invalid role type. Role type must be either 'Admin' or 'User'.");
             }
 
             var filter = Builders<Group>.Filter.Eq(g => g.Id, id);
@@ -537,5 +548,40 @@ namespace API_Saf_T_Child.Services
             return user != null;
         }
         #endregion
+
+        #region Roles
+        public async Task<List<Role>> GetRolesAsync()
+        {
+            var roles = await _rolesCollection.Find(_ => true).ToListAsync();
+            return roles;
+        }  
+
+        public async Task InsertRoleAsync(Role role)
+        {
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role), "Role object cannot be null.");
+            }
+
+            if (RoleType.Admin != role.Name && RoleType.Member != role.Name )
+            {
+                throw new ArgumentException(nameof(role.Name), "Role name is invalid.");
+            }
+
+            if (role.Permissions == null)
+            {
+                throw new ArgumentNullException(nameof(role.Permissions), "Role permissions cannot be null.");
+            }
+
+            if (role.Description == null)
+            {
+                throw new ArgumentNullException(nameof(role.Description), "Role description cannot be null.");
+            }
+
+            await _rolesCollection.InsertOneAsync(role);
+        }
+
+        #endregion
+    
     }
 }

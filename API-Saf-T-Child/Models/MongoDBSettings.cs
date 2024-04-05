@@ -8,7 +8,7 @@
         public string GroupsCollection { get; set; } = null!;
         public string DevicesCollection { get; set; } = null!;
         public string VehiclesCollection { get; set; } = null!;
-
+        public string RolesCollection { get; set; } = null!;
         public string TempUsersCollection { get; set; } = null!;
     }
 }
