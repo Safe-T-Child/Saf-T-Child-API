@@ -104,5 +104,11 @@ namespace API_Saf_T_Child.Controllers
             
             return Ok(devices);
         }
+
+        [HttpGet("http-only-endpoint")]
+        public IActionResult HttpOnlyEndpoint()
+        {
+            return Ok("This is an HTTP-only endpoint.");
+        }
     }
 }

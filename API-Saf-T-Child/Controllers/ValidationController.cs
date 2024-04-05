@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -68,6 +70,7 @@ namespace API_Saf_T_Child.Controllers
             return Ok(isPhoneNumberTaken);
         }
 
+        [Authorize]
         [HttpGet("verifyEmailAddress")]
         public async Task<ActionResult<bool>> VerifyEmailAddress(string tokenstring)
         {
@@ -178,8 +181,9 @@ namespace API_Saf_T_Child.Controllers
             {
                 return BadRequest("Invalid User");
             }
-        }
 
+        }
+        
         [HttpPost("sendPasswordReset")]
         public async Task<IActionResult> SendPaswordResetEmail(string id)
         {

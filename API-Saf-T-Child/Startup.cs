@@ -102,6 +102,10 @@ namespace API_Saf_T_Child
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            
+            // Add http middleware to redirect to https
+            app.UseMiddleware<SelectiveHttpsMiddleware>();
+            
             if (env.IsDevelopment())
             {
                 app.UseSwagger();

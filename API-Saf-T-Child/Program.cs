@@ -20,6 +20,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseMiddleware<SelectiveHttpsMiddleware>(); // Add http middleware to redirect to https
+
 startup.Configure(app, builder.Environment); // calling Configure method
 
 
