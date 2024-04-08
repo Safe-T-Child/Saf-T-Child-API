@@ -136,7 +136,7 @@ namespace API_Saf_T_Child.Controllers
 
                     if (group != null && newUser.Email != null)
                     {
-                        string linkUrl = "http://localhost:4200/api/validation/verifyGroupLink/" + tokenString;
+                        string linkUrl = "http://localhost:4200/accept-group-invite/?token=" + tokenString;
                         string body = "<p align= 'center'>You've been invited to join" + group.Owner.Name + "'s Family Group!</br> " +
                                         "Click the link below to accept: </br> " +
                                         " <a href='" + linkUrl + "'>Join Group</a></p>";

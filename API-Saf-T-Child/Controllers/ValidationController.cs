@@ -148,7 +148,7 @@ namespace API_Saf_T_Child.Controllers
 
                 if (user != null && user.Email != null && id != null)
                 {
-                    string linkUrl = "http://localhost:4200/api/validation/verifyEmailAddress/" + tokenString;
+                    string linkUrl = "http://localhost:4200/verify-email/?token=" + tokenString;
                     string body = "<p align= 'center'>Thank You for singing up for Saf-T-Child! </br> " +
                                     "Click the link below to verify your email: </br> " +
                                     " <a href='" + linkUrl + "'>Verify your Email</a></p>";
@@ -199,7 +199,7 @@ namespace API_Saf_T_Child.Controllers
 
                 if (user != null && user.Email != null && id != null)
                 {
-                    string linkUrl = "http://localhost:4200/api/validation/verifyEmailAddress/" + tokenString;
+                    string linkUrl = "http://localhost:4200/reset-password/?token=" + tokenString;
                     string body = "<p align= 'center'>Saf-T-Child Password Reset Request </br> " +
                                     "Click the link below to change your password: </br> " +
                                     " <a href='" + linkUrl + "'>Change Your Password</a></p>";
