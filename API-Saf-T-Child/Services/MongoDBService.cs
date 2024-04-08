@@ -384,12 +384,6 @@ namespace API_Saf_T_Child.Services
         public async Task<bool> UpdateUserAsync(string id, User user)
         {
             var users = await GetUsersAsync();
-            //bool isUsernameTaken = users.Any(u => u.UserName == user.UserName);
-
-            //if (isUsernameTaken)
-            //{
-            //    throw new ArgumentNullException(nameof(user.UserName), "Username is already taken.");
-            //}
 
             if (string.IsNullOrEmpty(id))
             {
@@ -433,9 +427,9 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(group), "Group object cannot be null.");
             }
 
-            if(group.Users.All(u => u.Role != RoleType.Admin || u.Role != RoleType.Member))
+            if(group.Users.All(u => u.Role != RoleType.Admin && u.Role != RoleType.Member))
             {
-                throw new ArgumentException(nameof(group.Users), "Invalid role type. Role type must be either 'Admin' or 'User'.");
+                throw new ArgumentException(nameof(group.Users), "Invalid role type. Role type must be either 'Admin' or 'Member'.");
             }
 
             var filter = Builders<Group>.Filter.Eq(g => g.Id, id);
