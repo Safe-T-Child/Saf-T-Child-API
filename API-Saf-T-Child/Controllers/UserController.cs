@@ -42,9 +42,9 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpPost("insertTempUser")]
-        public async Task<IActionResult> InsertNewTempUser([FromBody] User user)
+        public async Task<IActionResult> InsertNewTempUser([FromBody] User user, string groupId)
         {
-            await _mongoDBService.InsertTempUserAsync(user);
+            await _mongoDBService.InsertTempUserAsync(user, groupId);
             return Ok(user);
         }
 

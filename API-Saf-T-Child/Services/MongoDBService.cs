@@ -224,7 +224,7 @@ namespace API_Saf_T_Child.Services
             }
         }
 
-        public async Task InsertTempUserAsync(User user)
+        public async Task InsertTempUserAsync(User user, string groupId)
         {
             var users = await GetUsersAsync();
             bool doesUserExist = users.Any(u => u.Email == user.Email);
@@ -259,9 +259,6 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(user.PrimaryPhoneNumber), "Primary phone number cannot be null.");
             }
 
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
-            user.Password = hashedPassword;
-
             user.isEmailVerified = false;
             user.isTempUser = true;
 
@@ -273,6 +270,7 @@ namespace API_Saf_T_Child.Services
                 try
                 {
                     await _usersCollection.InsertOneAsync(session, user);
+                    await AddToGroupByGroupId(user, groupId);
 
                     // Commit the transaction if all operations succeed
                     await session.CommitTransactionAsync();
@@ -582,6 +580,26 @@ namespace API_Saf_T_Child.Services
         }
 
         #endregion
-    
+
+        public async Task AddToGroupByGroupId(User user, string groupId)
+        {
+            var filter = Builders<Group>.Filter.Eq(g => g.Id, groupId);
+            var fullName = user.FirstName + " " + user.LastName;
+
+            var userWithRole = new UserWithRole
+            {
+                Id = user.Id,
+                Name = fullName,
+                Role = RoleType.Member, 
+                AcceptedInvite = false
+            };
+
+            var update = Builders<Group>.Update.Push(g => g.Users, userWithRole);
+
+            await _groupsCollection.UpdateOneAsync(filter, update);
+        }
+
+
+
     }
 }
