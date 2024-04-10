@@ -135,9 +135,11 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpPost("sendVerificationEmail")]
-        public async Task<IActionResult> SendVerificationEmail(string id)
+        public async Task<IActionResult> SendVerificationEmail(string email)
         {
-            var user = await _mongoDBService.GetUserByIdAsync(id);
+            var users = await _mongoDBService.GetUsersAsync();
+
+            var user = users.First(obj => obj.Email == email);
 
             if (user != null)
             {
@@ -156,7 +158,7 @@ namespace API_Saf_T_Child.Controllers
 
                 var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
 
-                if (user != null && user.Email != null && id != null)
+                if (user != null && user.Email != null)
                 {
                     string linkUrl = "http://localhost:4200/api/validation/verifyEmailAddress/" + tokenString;
                     string body = "<p align= 'center'>Thank You for singing up for Saf-T-Child! </br> " +
@@ -185,9 +187,11 @@ namespace API_Saf_T_Child.Controllers
         }
         
         [HttpPost("sendPasswordReset")]
-        public async Task<IActionResult> SendPaswordResetEmail(string id)
+        public async Task<IActionResult> SendPaswordResetEmail(string email)
         {
-            var user = await _mongoDBService.GetUserByIdAsync(id);
+            var users = await _mongoDBService.GetUsersAsync();
+
+            var user = users.First(obj => obj.Email == email);
 
             if (user != null)
             {
@@ -207,7 +211,7 @@ namespace API_Saf_T_Child.Controllers
 
                 var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
 
-                if (user != null && user.Email != null && id != null)
+                if (user != null && user.Email != null)
                 {
                     string linkUrl = "http://localhost:4200/api/validation/verifyEmailAddress/" + tokenString;
                     string body = "<p align= 'center'>Saf-T-Child Password Reset Request </br> " +
