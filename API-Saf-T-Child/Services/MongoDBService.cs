@@ -55,7 +55,7 @@ namespace API_Saf_T_Child.Services
             return users;
         }
 
-        public async Task<User> LoginUserAsync(string email, string password)
+        public async Task<User> LoginUserAsync(string email)
         {
             var filter = Builders<User>.Filter.Eq("email", email);
             var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
@@ -64,6 +64,14 @@ namespace API_Saf_T_Child.Services
             {
                 return null;
             }
+            return user;
+        }
+
+        public async Task<User> GetUserByEmailAsync(string email)
+        {
+            var filter = Builders<User>.Filter.Eq("email", email);
+            var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
+
             return user;
         }
 
