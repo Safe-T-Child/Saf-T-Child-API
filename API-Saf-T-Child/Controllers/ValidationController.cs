@@ -60,68 +60,74 @@ namespace API_Saf_T_Child.Controllers
             return Ok(isPhoneNumberTaken);
         }
 
-        [Authorize]
         [HttpGet("verifyEmailAddress")]
         public async Task<ActionResult<bool>> VerifyEmailAddress(string tokenstring)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.ReadToken(tokenstring) as JwtSecurityToken;
-
-            // Step 2: Validate token signature
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
-                ValidateIssuer = false,
-                ValidateAudience = false
-            };
-
-            SecurityToken validatedToken;
             try
             {
-                tokenHandler.ValidateToken(tokenstring, validationParameters, out validatedToken);
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var token = tokenHandler.ReadToken(tokenstring) as JwtSecurityToken;
+
+                // Step 2: Validate token signature
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+
+                SecurityToken validatedToken;
+                try
+                {
+                    tokenHandler.ValidateToken(tokenstring, validationParameters, out validatedToken);
+                }
+                catch (SecurityTokenValidationException)
+                {
+                    return BadRequest("Token validation failed. Invalid signature or other validation error.");
+                }
+
+                // Step 3: Check if the token is not expired
+                if (token.ValidTo < DateTime.UtcNow)
+                {
+                    return BadRequest("Token is Expired");
+                }
+
+                var userIdClaim = token.Claims.FirstOrDefault(claim => claim.Type == "userId");
+
+                if (userIdClaim != null)
+                {
+                    string userIdValue = userIdClaim.Value;
+                    var user = await _mongoDBService.GetUserByIdAsync(userIdValue);
+                    if (user != null)
+                    {
+                        user.isEmailVerified = true;
+                        var result = await _mongoDBService.UpdateUserAsync(userIdValue, user);
+
+                        if (result)
+                        {
+                            return Ok(user);
+                        }
+                        else
+                        {
+                            return NotFound();
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest("User with ID not found.");
+                    }
+                }
+                else
+                {
+                    return BadRequest("User ID claim not found in token.");
+                }
             }
             catch (SecurityTokenValidationException)
             {
                 return BadRequest("Token validation failed. Invalid signature or other validation error.");
             }
 
-            // Step 3: Check if the token is not expired
-            if (token.ValidTo < DateTime.UtcNow)
-            {
-                return BadRequest("Token is Expired");
-            }
-
-            var userIdClaim = token.Claims.FirstOrDefault(claim => claim.Type == "userId");
-
-            if (userIdClaim != null)
-            {
-                string userIdValue = userIdClaim.Value;
-                var user = await _mongoDBService.GetUserByIdAsync(userIdValue);
-                if (user != null)
-                {
-                    user.isEmailVerified = true;
-                    var result = await _mongoDBService.UpdateUserAsync(userIdValue, user);
-
-                    if (result)
-                    {
-                        return Ok(user);
-                    }
-                    else
-                    {
-                        return NotFound();
-                    }
-                }
-                else
-                {
-                    return BadRequest("User with ID not found.");
-                }
-                
-            }
-            else
-            {
-                return BadRequest("User ID claim not found.");
-            }
         }
 
         [HttpPost("sendVerificationEmail")]

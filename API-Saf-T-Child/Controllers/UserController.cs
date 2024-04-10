@@ -91,8 +91,8 @@ namespace API_Saf_T_Child.Controllers
         [HttpPost("forgotUserPassword")]
         public async Task<IActionResult> SendForgotPasswordLink(string email)
         {
-            var users = await _mongoDBService.GetUsersAsync();
-            var user = users.Where(u => u.Email != null && u.Email.Contains(email)).First();
+            var user = await _mongoDBService.GetUserByEmailAsync(email);
+
             if (user != null)
             {
                 //TODO - Link Pasword Update Page stuff here
@@ -111,7 +111,7 @@ namespace API_Saf_T_Child.Controllers
             }
             else
             {
-                return BadRequest("Invalid User");
+                return NotFound();
             }
         }
         
