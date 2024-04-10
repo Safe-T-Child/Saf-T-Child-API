@@ -45,7 +45,17 @@ namespace API_Saf_T_Child.Services
             return user;
         }
 
-        public async Task<User> LoginUserAsync(string email)
+        public async Task<List<User>> GetUsersByIdsAsync(List<string> ids)
+        {
+            var objectIds = ids.Select(id => new ObjectId(id)).ToList(); 
+
+            var filter = Builders<User>.Filter.In("_id", objectIds); 
+            var users = await _usersCollection.Find(filter).ToListAsync();
+
+            return users;
+        }
+
+        public async Task<User> LoginUserAsync(string email, string password)
         {
             var filter = Builders<User>.Filter.Eq("email", email);
             var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
