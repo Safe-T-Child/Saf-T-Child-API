@@ -32,16 +32,6 @@ namespace API_Saf_T_Child.Controllers
             _messageService = messageService;
         }
 
-        //[HttpGet("checkUsername")]
-        //public async Task<ActionResult<bool>> CheckUsernameAvailability(string userName)
-        //{
-        //    var users = await _mongoDBService.GetUsersAsync();
-        //    bool isUsernameTaken = users.Any(u => u.UserName == userName);
-
-        //    // Return a response based on the availability
-        //    return Ok(isUsernameTaken);
-        //}
-
         [HttpGet("checkEmail")]
         public async Task<ActionResult<(bool,bool)>> CheckEmailAvailability(string email)
         {
@@ -158,7 +148,7 @@ namespace API_Saf_T_Child.Controllers
 
                 if (user != null && user.Email != null && id != null)
                 {
-                    string linkUrl = "http://localhost:4200/api/validation/verifyEmailAddress/" + tokenString;
+                    string linkUrl = "http://localhost:4200/verify-email/?token=" + tokenString;
                     string body = "<p align= 'center'>Thank You for singing up for Saf-T-Child! </br> " +
                                     "Click the link below to verify your email: </br> " +
                                     " <a href='" + linkUrl + "'>Verify your Email</a></p>";
@@ -209,7 +199,7 @@ namespace API_Saf_T_Child.Controllers
 
                 if (user != null && user.Email != null && id != null)
                 {
-                    string linkUrl = "http://localhost:4200/api/validation/verifyEmailAddress/" + tokenString;
+                    string linkUrl = "http://localhost:4200/reset-password/?token=" + tokenString;
                     string body = "<p align= 'center'>Saf-T-Child Password Reset Request </br> " +
                                     "Click the link below to change your password: </br> " +
                                     " <a href='" + linkUrl + "'>Change Your Password</a></p>";
