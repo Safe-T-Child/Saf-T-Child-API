@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace API_Saf_T_Child.Models
 {
-    public class PhoneNumber
+    public class PhoneNumberDetails
     {
         [BsonElement("countryCode")]
         [RegularExpression("^[0-9]+$")]

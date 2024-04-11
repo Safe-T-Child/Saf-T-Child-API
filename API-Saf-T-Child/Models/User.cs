@@ -24,13 +24,13 @@ namespace API_Saf_T_Child.Models
 
         [BsonElement("primaryPhoneNumber")]
         [Required]
-        public PhoneNumber PrimaryPhoneNumber { get; set; }
+        public PhoneNumberDetails PrimaryPhoneNumber { get; set; }
 
         [BsonElement("password")]
         public string? Password { get; set; }
 
         [BsonElement("secondaryPhoneNumbers")]
-        public List<PhoneNumber>? SecondaryPhoneNumbers { get; set; }
+        public List<PhoneNumberDetails>? SecondaryPhoneNumbers { get; set; }
 
         [BsonElement("isEmailVerified")]
         public bool isEmailVerified { get; set; }

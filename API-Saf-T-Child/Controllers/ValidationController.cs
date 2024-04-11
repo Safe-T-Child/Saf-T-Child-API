@@ -13,6 +13,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
+using Twilio;
+using Twilio.Types;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Rest.Verify.V2.Service;
 
 namespace API_Saf_T_Child.Controllers
 {
@@ -24,13 +28,84 @@ namespace API_Saf_T_Child.Controllers
         private readonly MessageService _messageService;
         private readonly IConfiguration _configuration;
 
+        private readonly string _accountSid;
+        private readonly string _authToken;
+        private readonly string _verifyServiceSid;
+
+        
+
         // This constructor injects an instance of MongoDBService into the controller.
         public ValidationController(IConfiguration configuration, MongoDBService mongoDBService, MessageService messageService)
         {
             _configuration = configuration;
             _mongoDBService = mongoDBService;
             _messageService = messageService;
+
+            _authToken = configuration["TwilioSettings:AuthToken"];
+            _accountSid = configuration["TwilioSettings:AccountSid"];
+            _verifyServiceSid = configuration["TwilioSettings:VerifyServiceSid"];
+
+            // Initialize Twilio client with your account SID and auth token
+            Twilio.TwilioClient.Init(_accountSid, _authToken);
         }
+
+        [HttpPost("SendVerificationCode")]
+        public async Task<IActionResult> SendVerificationCode(string phoneNumber)
+        {
+            try
+            {
+                var verification = await VerificationResource.CreateAsync(
+                    to: phoneNumber,
+                    channel: "sms", // or "call" for voice verification
+                    pathServiceSid: _verifyServiceSid);
+
+                return Ok(new { verification.Status });
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest($"Error sending verification code: {ex.Message}");
+            }
+        }
+
+        [HttpPost("VerifyCode")]
+        public async Task<IActionResult> VerifyCode([FromBody] VerificationRequestModel model)
+        {
+            try
+            {
+                var verificationCheck = await VerificationCheckResource.CreateAsync(
+                    to: model.PhoneNumber,
+                    code: model.Code,
+                    pathServiceSid: _verifyServiceSid);
+
+                return Ok(new { verificationCheck.Status });
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest($"Error verifying code: {ex.Message}");
+            }
+        }
+
+
+        //send a verification code to the user's phone number
+        // [HttpPost("sendVerificationCode")]
+        // public async Task<IActionResult> SendVerificationCode(string phoneNumber)
+        // {
+        //     //send the verification code to the user's phone number
+        //     var accountSid = _configuration["TwilioSettings:AccountSid"];
+        //     var authToken = _configuration["TwilioSettings:AuthToken"];
+        //     TwilioClient.Init(accountSid, authToken);
+
+        //     var from  = new Twilio.Types.PhoneNumber("+17249071013");
+        //     var to = new Twilio.Types.PhoneNumber("+15029094215");   
+
+        //     var message = MessageResource.Create(
+        //         to: to,
+        //         from: from,
+        //         body: "Your Saf-T-Child verification code is: 123456"
+        //     );
+
+        //     return Ok(message.Sid);
+        // }
 
         [HttpGet("checkEmail")]
         public async Task<ActionResult<(bool,bool)>> CheckEmailAvailability(string email)
@@ -50,7 +125,7 @@ namespace API_Saf_T_Child.Controllers
         }
 
         [HttpGet("checkPhoneNumber")]
-        public async Task<ActionResult<bool>> CheckPhoneNumberAvailability(PhoneNumber phoneNumber)
+        public async Task<ActionResult<bool>> CheckPhoneNumberAvailability(PhoneNumberDetails phoneNumber)
         {
             var users = await _mongoDBService.GetUsersAsync();
             bool isPhoneNumberTaken = users.Any(u => u.PrimaryPhoneNumber.CountryCode == phoneNumber.CountryCode 
@@ -245,5 +320,16 @@ namespace API_Saf_T_Child.Controllers
                 return BadRequest("Invalid User ID");
             }
         }
+    }
+
+    public class VerificationRequestModel
+    {
+        [RegularExpression("^[0-9]+$")]
+        [Required]
+        public string PhoneNumber { get; set; }
+
+        [RegularExpression("^[0-9]+$")]
+        [Required]
+        public string Code { get; set; }
     }
 }
