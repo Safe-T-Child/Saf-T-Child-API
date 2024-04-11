@@ -13,6 +13,6 @@ namespace API_Saf_T_Child.Models
         [BsonElement("phoneNumber")]
         [RegularExpression("^[0-9]+$")]
         [Required]
-        public int PhoneNumberValue { get; set; }
+        public long PhoneNumberValue { get; set; }
     }
 }

@@ -35,6 +35,20 @@ namespace API_Saf_T_Child.Controllers
             return Ok(vehicle);
         }
 
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<ActionResult<Vehicle>> GetVehicle(string id)
+        {
+            var vehicle = await _mongoDBService.GetVehicleByIdAsync(id);
+
+            if (vehicle == null)
+            {
+                return NotFound(); // Return 404 Not Found if the vehicle with the specified ID is not found
+            }
+
+            return Ok(vehicle);
+        }
+
         [HttpPut("{id}")]
         [Authorize]
         public async Task<IActionResult> UpdateVehicle(string id, [FromBody] Vehicle vehicle)
