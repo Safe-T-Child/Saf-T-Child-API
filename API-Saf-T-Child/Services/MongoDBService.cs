@@ -69,7 +69,7 @@ namespace API_Saf_T_Child.Services
 
         public async Task<User> GetUserByEmailAsync(string email)
         {
-            var filter = Builders<User>.Filter.Eq("email", email);
+            var filter = Builders<User>.Filter.Regex("email", new BsonRegularExpression(email, "i"));
             var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
 
             return user;

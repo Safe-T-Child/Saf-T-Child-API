@@ -133,9 +133,7 @@ namespace API_Saf_T_Child.Controllers
         [HttpPost("sendVerificationEmail")]
         public async Task<IActionResult> SendVerificationEmail(string email)
         {
-            var users = await _mongoDBService.GetUsersAsync();
-
-            var user = users.First(obj => obj.Email == email);
+            var user = await _mongoDBService.GetUserByEmailAsync(email);
 
             if (user != null)
             {
@@ -185,9 +183,7 @@ namespace API_Saf_T_Child.Controllers
         [HttpPost("sendPasswordReset")]
         public async Task<IActionResult> SendPaswordResetEmail(string email)
         {
-            var users = await _mongoDBService.GetUsersAsync();
-
-            var user = users.First(obj => obj.Email == email);
+            var user = await _mongoDBService.GetUserByEmailAsync(email);
 
             if (user != null)
             {
