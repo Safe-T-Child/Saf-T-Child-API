@@ -48,7 +48,7 @@ namespace API_Saf_T_Child.Controllers
             var tokeOptions = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Issuer"],
-                expires: DateTime.Now.AddHours(2),
+                expires: DateTime.Now.AddHours(24),
                 signingCredentials: signinCredentials,
                 claims : new List<Claim>{
                     //new Claim("username", user.UserName),

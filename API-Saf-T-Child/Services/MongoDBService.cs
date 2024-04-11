@@ -137,11 +137,89 @@ namespace API_Saf_T_Child.Services
             return devices;
         }
 
+        public async Task<string> GetMonarchCoreInformationByActivationCodeAsync(int activationCode)
+        {
+            Device device;
+            Group group;
+            User owner;
+            List<User> users;
+            Vehicle vehicle;
+
+            try
+            {
+                device = await GetDeviceByActivationCodeAsync(activationCode);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to get device by activation code {activationCode}.", ex);
+            }
+
+            try
+            {
+                group = await GetGroupByIdAsync(device.Group.Id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to get group by ID: {device.Group.Id}.", ex);
+            }
+
+            try
+            {
+                owner = await GetUserByIdAsync(group.Owner.Id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to get owner by ID: {group.Owner.Id}.", ex);
+            }
+
+            try
+            {
+                users = await GetUsersByIdsAsync(group.Users.Select(u => u.Id).ToList());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to get users by IDs.", ex);
+            }
+
+            try
+            {
+                vehicle = await GetVehicleByIdAsync(device.Car.Id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to get vehicle by ID: {device.Car.Id}.", ex);
+            }
+
+            // Assuming previous operations were successful
+            var vehicleInfo = $"{vehicle.Make},{vehicle.Model},{vehicle.Color},{vehicle.Year},{vehicle.LicensePlate}";
+            var ownerInfo = owner.PrimaryPhoneNumber.PhoneNumberValue.ToString();
+            var usersInfo = string.Join(",", users.Select(u => u.PrimaryPhoneNumber.PhoneNumberValue.ToString()));
+
+            //TODO - Get local emergency number dynamically if necessary
+            var emergencyNumber = "6063363510"; // Placeholder emergency number
+
+            var monarchCoreInfo = $"{vehicleInfo},{emergencyNumber},{ownerInfo},{usersInfo}";
+
+            return monarchCoreInfo ?? throw new InvalidOperationException("Failed to generate Monarch Core Information.");
+        }
+
+
+
        
 
         #endregion
 
         #region Vehicles
+
+        public async Task<Vehicle> GetVehicleByIdAsync(string id)
+        {
+            var objectId = new ObjectId(id); // Convert string ID to ObjectId
+
+            var filter = Builders<Vehicle>.Filter.Eq("_id", objectId); // Filter by group ID
+            var vehicle = await _vehiclesCollection.Find(filter).FirstOrDefaultAsync();
+
+            return vehicle;
+        }
         public async Task<List<Vehicle>> GetVehiclesByOwnerAsync(string ownerId)
         {
             var filter = Builders<Vehicle>.Filter.Eq("owner._id", ObjectId.Parse(ownerId));
@@ -399,7 +477,6 @@ namespace API_Saf_T_Child.Services
         #region Update
         public async Task<bool> UpdateUserAsync(string id, User user)
         {
-            var users = await GetUsersAsync();
 
             if (string.IsNullOrEmpty(id))
             {
@@ -421,13 +498,12 @@ namespace API_Saf_T_Child.Services
                 .Set("email", user.Email)
                 .Set("primaryPhoneNumber", user.PrimaryPhoneNumber)
                 .Set("secondaryPhoneNumbers", user.SecondaryPhoneNumbers)
-                .Set("password", user.Password)
                 .Set("isEmailVerified", user.isEmailVerified)
                 .Set("isTempUser", user.isTempUser);
 
             var result = await _usersCollection.UpdateOneAsync(filter, update);
 
-            return result.ModifiedCount > 0;
+            return result.MatchedCount > 0;
         }
 
         public async Task<bool> UpdateGroupAsync(string id, Group group)
@@ -610,8 +686,6 @@ namespace API_Saf_T_Child.Services
 
             await _groupsCollection.UpdateOneAsync(filter, update);
         }
-
-
 
     }
 }

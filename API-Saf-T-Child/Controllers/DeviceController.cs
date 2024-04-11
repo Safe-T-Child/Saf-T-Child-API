@@ -110,5 +110,30 @@ namespace API_Saf_T_Child.Controllers
         {
             return Ok("This is an HTTP-only endpoint.");
         }
+
+        [HttpGet("monarch/{activationCode}")]
+        public async Task<ActionResult<string>> GetMonarchDeviceByActivationCode(int activationCode)
+        {
+            // Convert activationCode to string to check its length
+            string activationCodeStr = activationCode.ToString();
+            
+            // Check if the length of the activationCode is exactly 9 digits
+            if (activationCodeStr.Length != 9)
+            {
+                // Return BadRequest if not exactly 9 digits
+                return BadRequest("The activation code must be exactly 9 digits long.");
+            }
+
+            var result = await _mongoDBService.GetMonarchCoreInformationByActivationCodeAsync(activationCode);
+            
+            if (result == null)
+            {
+                // Return NotFound if the device is not found
+                return NotFound("Device not found.");
+            }
+
+            return Ok(result);
+        }
+
     }
 }
