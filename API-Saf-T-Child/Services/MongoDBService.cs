@@ -57,8 +57,7 @@ namespace API_Saf_T_Child.Services
 
         public async Task<User> LoginUserAsync(string email)
         {
-            var filter = Builders<User>.Filter.Eq("email", email);
-            var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
+            var user = await GetUserByEmailAsync(email);
 
             if (user == null)
             {
