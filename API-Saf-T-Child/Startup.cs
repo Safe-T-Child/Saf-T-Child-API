@@ -30,14 +30,24 @@ namespace API_Saf_T_Child
                 {
                     OnAuthenticationFailed = context =>
                     {
-                        if (context.Exception.GetType() == typeof(SecurityTokenInvalidIssuerException))
+                        var exceptionType = context.Exception.GetType();
+                        if (exceptionType == typeof(SecurityTokenInvalidIssuerException))
                         {
                             context.Response.Headers.Add("Token-Error-Issuer", "Invalid issuer");
                         }
-                        else if (context.Exception.GetType() == typeof(SecurityTokenInvalidAudienceException))
+                        else if (exceptionType == typeof(SecurityTokenInvalidAudienceException))
                         {
                             context.Response.Headers.Add("Token-Error-Audience", "Invalid audience");
                         }
+                        else if (exceptionType == typeof(SecurityTokenExpiredException))
+                        {
+                            context.Response.Headers.Add("Token-Error-Expired", "Token expired");
+                        }
+                        else if (exceptionType == typeof(SecurityTokenNotYetValidException))
+                        {
+                            context.Response.Headers.Add("Token-Error-NotYetValid", "Token not yet valid");
+                        }
+                        context.Response.Headers.Add("Token-Error-Detail", context.Exception.Message);
                         return Task.CompletedTask;
                     },
                 };
