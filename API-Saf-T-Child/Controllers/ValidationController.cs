@@ -86,53 +86,40 @@ namespace API_Saf_T_Child.Controllers
         }
 
 
-        //send a verification code to the user's phone number
-        // [HttpPost("sendVerificationCode")]
-        // public async Task<IActionResult> SendVerificationCode(string phoneNumber)
-        // {
-        //     //send the verification code to the user's phone number
-        //     var accountSid = _configuration["TwilioSettings:AccountSid"];
-        //     var authToken = _configuration["TwilioSettings:AuthToken"];
-        //     TwilioClient.Init(accountSid, authToken);
-
-        //     var from  = new Twilio.Types.PhoneNumber("+17249071013");
-        //     var to = new Twilio.Types.PhoneNumber("+15029094215");   
-
-        //     var message = MessageResource.Create(
-        //         to: to,
-        //         from: from,
-        //         body: "Your Saf-T-Child verification code is: 123456"
-        //     );
-
-        //     return Ok(message.Sid);
-        // }
-
         [HttpGet("checkEmail")]
-        public async Task<ActionResult<(bool,bool)>> CheckEmailAvailability(string email)
+        public async Task<ActionResult<UserStatus>> CheckEmailAvailability(string email)
         {
-            (bool, bool) returnVal = (false, false);
-            var users = await _mongoDBService.GetUsersAsync();
-            bool isEmailTaken = users.Any(u => u.Email != null && u.Email == email);
-
-            if(isEmailTaken)
+            UserStatus returnVal = new UserStatus
             {
-                returnVal.Item1 = isEmailTaken;
-                returnVal.Item2 = users.First(u => u.Email != null && u.Email == email).isTempUser;
+                isEmailTaken = false,
+                isTempUser = null
+            };
+
+            var user = await _mongoDBService.GetUserByEmailAsync(email);
+
+            if(user != null)
+            {
+                returnVal.isEmailTaken = true;
+                returnVal.isTempUser = user.isTempUser;
             }
 
-            // Return a response based on the availability
             return Ok(returnVal);
         }
 
         [HttpGet("checkPhoneNumber")]
         public async Task<ActionResult<bool>> CheckPhoneNumberAvailability(PhoneNumberDetails phoneNumber)
         {
-            var users = await _mongoDBService.GetUsersAsync();
-            bool isPhoneNumberTaken = users.Any(u => u.PrimaryPhoneNumber.CountryCode == phoneNumber.CountryCode 
-                                                    && u.PrimaryPhoneNumber.PhoneNumberValue == phoneNumber.PhoneNumberValue);
-
-            // Return a response based on the availability
-            return Ok(isPhoneNumberTaken);
+            
+            var user= await _mongoDBService.GetUserByPhoneNumberAsync(phoneNumber);
+            
+            if(user != null)
+            {
+                return Ok(true);
+            }
+            else
+            {
+                return Ok(false);
+            }
         }
 
         [HttpGet("verifyEmailAddress")]
@@ -320,6 +307,12 @@ namespace API_Saf_T_Child.Controllers
                 return BadRequest("Invalid User ID");
             }
         }
+    }
+
+    public class UserStatus
+    {
+        public bool isEmailTaken { get; set; }
+        public bool? isTempUser { get; set; }
     }
 
     public class VerificationRequestModel

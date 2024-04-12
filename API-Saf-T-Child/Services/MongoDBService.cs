@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using BCrypt.Net;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API_Saf_T_Child.Services
 {
@@ -28,6 +29,21 @@ namespace API_Saf_T_Child.Services
         }
 
         # region Users
+
+        public async Task<User> GetUserByPhoneNumberAsync(PhoneNumberDetails phoneNumber)
+        {
+            var filter = Builders<User>.Filter.Eq(p=> p.PrimaryPhoneNumber, phoneNumber );
+            var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
+
+            if(user == null)
+            {
+                return null;
+            }
+
+            return user;
+        }
+
+      
 
         public async Task<List<User>> GetUsersAsync()
         { 
@@ -55,6 +71,24 @@ namespace API_Saf_T_Child.Services
             return users;
         }
 
+        public async Task<List<User>> GetUsersByGroupIdAsync(string groupId)
+        {
+            var filter = Builders<Group>.Filter.Eq( g=> g.Id, groupId);
+            var group = await _groupsCollection.Find(filter).FirstOrDefaultAsync();
+
+            if(group == null)
+            {
+                return null;
+            }
+
+            var userIds = group.Users.Select(u => u.Id).ToList();
+
+            var users = await GetUsersByIdsAsync(userIds);
+
+
+            return users;
+        }
+
         public async Task<User> LoginUserAsync(string email)
         {
             var user = await GetUserByEmailAsync(email);
@@ -66,12 +100,17 @@ namespace API_Saf_T_Child.Services
             return user;
         }
 
-        public async Task<User> GetUserByEmailAsync(string email)
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
             var filter = Builders<User>.Filter.Regex("email", new BsonRegularExpression(email, "i"));
             var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
 
-            return user;
+            //now check that they are exact matches not just partial
+            if (user != null && user.Email.ToLower() == email.ToLower())
+            {
+                return user;
+            }
+            return null;
         }
 
         # endregion
@@ -321,10 +360,16 @@ namespace API_Saf_T_Child.Services
 
         public async Task InsertTempUserAsync(User user, string groupId)
         {
-            var users = await GetUsersAsync();
-            bool doesUserExist = users.Any(u => u.Email == user.Email);
+            var emailExists = await GetUserByEmailAsync(user.Email) != null;
 
-            if (doesUserExist == true)
+            if (emailExists == true)
+            {
+                throw new ArgumentNullException(nameof(user.Email), "Email already exists.");
+            }
+
+            var phoneNumberExists = await GetUserByPhoneNumberAsync(user.PrimaryPhoneNumber) != null;
+
+            if (phoneNumberExists == true)
             {
                 throw new ArgumentNullException(nameof(user), "User alraedy exists.");
             }
@@ -365,7 +410,10 @@ namespace API_Saf_T_Child.Services
                 try
                 {
                     await _usersCollection.InsertOneAsync(session, user);
-                    await AddToGroupByGroupId(user, groupId);
+                    
+                    UserWithRole userWithRole = new UserWithRole(user.Id, user.FirstName + " " + user.LastName, RoleType.Member);
+                    await _groupsCollection.UpdateOneAsync(session, Builders<Group>.Filter.Eq(g => g.Id, groupId), 
+                    Builders<Group>.Update.Push(u => u.Users, userWithRole));
 
                     // Commit the transaction if all operations succeed
                     await session.CommitTransactionAsync();
@@ -518,10 +566,15 @@ namespace API_Saf_T_Child.Services
                 throw new ArgumentNullException(nameof(group), "Group object cannot be null.");
             }
 
-            if(group.Users.All(u => u.Role != RoleType.Admin && u.Role != RoleType.Member))
+            if(!group.Users.IsNullOrEmpty())
             {
-                throw new ArgumentException(nameof(group.Users), "Invalid role type. Role type must be either 'Admin' or 'Member'.");
+                if(group.Users.All(u => u.Role != RoleType.Admin && u.Role != RoleType.Member))
+                {
+                    throw new ArgumentException(nameof(group.Users), "Invalid role type. Role type must be either 'Admin' or 'Member'.");
+                }
             }
+
+            
 
             var filter = Builders<Group>.Filter.Eq(g => g.Id, id);
             var update = Builders<Group>.Update
@@ -530,7 +583,7 @@ namespace API_Saf_T_Child.Services
                 .Set(g => g.Users, group.Users);
 
             var result = await _groupsCollection.UpdateOneAsync(filter, update);
-            return result.ModifiedCount > 0;
+            return result.MatchedCount > 0;
         }
 
         public async Task<bool> UpdateDeviceAsync(string id, Device updatedDevice)
@@ -673,13 +726,16 @@ namespace API_Saf_T_Child.Services
             var filter = Builders<Group>.Filter.Eq(g => g.Id, groupId);
             var fullName = user.FirstName + " " + user.LastName;
 
-            var userWithRole = new UserWithRole
+            if(user == null)
             {
-                Id = user.Id,
-                Name = fullName,
-                Role = RoleType.Member, 
-                AcceptedInvite = false
-            };
+                throw new ArgumentNullException(nameof(user), "User object cannot be null.");
+            }
+            if(user.Id == null)
+            {
+                throw new ArgumentNullException(nameof(user.Id), "User ID cannot be null.");
+            }
+
+            var userWithRole = new UserWithRole (user.Id, fullName, RoleType.Member) ;
 
             var update = Builders<Group>.Update.Push(g => g.Users, userWithRole);
 
