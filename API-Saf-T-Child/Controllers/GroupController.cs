@@ -105,10 +105,7 @@ namespace API_Saf_T_Child.Controllers
             var group = await _mongoDBService.GetGroupByIdAsync(groupId);
             var newUser = await _mongoDBService.GetUserByIdAsync(newUserId);
 
-            UserWithRole groupUser = new UserWithRole();
-            groupUser.Name = newUser.FirstName + " " + newUser.LastName;
-            groupUser.Role = RoleType.Member;
-            groupUser.AcceptedInvite = false;
+            UserWithRole groupUser =  new UserWithRole(newUserId, newUser.FirstName + " " + newUser.LastName, RoleType.Member);
 
 
             if (group != null && groupUser != null)

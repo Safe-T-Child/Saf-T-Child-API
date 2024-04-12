@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using API_Saf_T_Child.Models;
 using API_Saf_T_Child.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace API_Saf_T_Child.Controllers
 {
@@ -12,18 +13,29 @@ namespace API_Saf_T_Child.Controllers
         private readonly MongoDBService _mongoDBService;
         private readonly MessageService _messageService;
 
-        public UserController(MongoDBService mongoDBService, MessageService messageService)
+        private readonly IConfiguration _configuration;
+
+        public UserController(IConfiguration configuration, MongoDBService mongoDBService, MessageService messageService)
         {
             _mongoDBService = mongoDBService;
             _messageService = messageService;
+            _configuration = configuration;
         }
 
-        // TODO: DELETE THIS API ENDPOINT
-        [HttpGet("getAllUsers")]
-        public async Task<ActionResult<IEnumerable<User>>> Get()
+        [HttpGet("getUserByEmail")]
+        [Authorize]
+        public async Task<ActionResult<User>> GetUserByEmail( string email)
         {
-            var users = await _mongoDBService.GetUsersAsync();
-            return Ok(users);
+            var user = await _mongoDBService.GetUserByEmailAsync(email);
+            return Ok(user);
+        }
+
+        [HttpGet("getUserByPhoneNumber")]
+        [Authorize]
+        public async Task<ActionResult<User>> GetUserByPhoneNumber(PhoneNumberDetails phoneNumber)
+        {
+            var user = await _mongoDBService.GetUserByPhoneNumberAsync(phoneNumber);
+            return Ok(user);
         }
 
         [HttpGet("getUserById")]
@@ -42,10 +54,24 @@ namespace API_Saf_T_Child.Controllers
             return Ok(users);
         }
 
+        [HttpGet("getUsersByGroupId")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<User>>> GetUsersByGroupId(string groupId)
+        {
+            var users = await _mongoDBService.GetUsersByGroupIdAsync(groupId);
+            return Ok(users);
+        }
+
         [HttpPost("insertUser")]
         public async Task<IActionResult> InsertNewUser([FromBody] User user, int deviceActivationNumber)
         {
             await _mongoDBService.InsertUserAsync(user, deviceActivationNumber);
+            if(user != null)
+            {
+                var validationController = new ValidationController(_configuration, _mongoDBService, _messageService);
+                await validationController.SendVerificationEmail(user.Email);
+            }
+
             return Ok(user);
         }
 

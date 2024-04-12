@@ -38,7 +38,7 @@ namespace API_Saf_T_Child.Models
         [BsonElement("isTempUser")]
         public bool isTempUser { get; set; }
 
-        
 
     }
+
 }

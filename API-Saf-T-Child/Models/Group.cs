@@ -20,6 +20,15 @@ namespace API_Saf_T_Child.Models
         
         [BsonElement("acceptedInvite")]
         public bool AcceptedInvite { get; set; }
+
+        // Add a constructor that initializes the UserWithRole object with the specified name and role.
+        public UserWithRole(string id, string name, string role, bool acceptedInvite = false)
+        {
+            Id = id;
+            Name = name;
+            Role = role;
+            AcceptedInvite = false;
+        }
     }
     public class Group
     {
