@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using API_Saf_T_Child.Templates;
 
 namespace API_Saf_T_Child.Controllers
 {
@@ -133,10 +134,8 @@ namespace API_Saf_T_Child.Controllers
 
                     if (group != null && newUser.Email != null)
                     {
-                        string linkUrl = "http://localhost:4200/accept-group-invite/?token=" + tokenString;
-                        string body = "<p align= 'center'>You've been invited to join" + group.Owner.Name + "'s Family Group!</br> " +
-                                        "Click the link below to accept: </br> " +
-                                        " <a href='" + linkUrl + "'>Join Group</a></p>";
+                        string linkUrl = "https://saf-t-child-app.azurewebsites.net/accept-group-invite/?token=" + tokenString;
+                        string body = emailTemplates.groupMessage(group.Owner.Name, linkUrl);
                         bool success = await _messageService.SendEmail(newUser.Email, "Invitation to join Saf-T-Child Family Group", body);
                         if (success)
                         {
