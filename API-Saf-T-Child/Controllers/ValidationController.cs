@@ -17,6 +17,7 @@ using Twilio;
 using Twilio.Types;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Rest.Verify.V2.Service;
+using API_Saf_T_Child.Templates;
 
 namespace API_Saf_T_Child.Controllers
 {
@@ -216,10 +217,8 @@ namespace API_Saf_T_Child.Controllers
 
                 if (user != null && user.Email != null)
                 {
-                    string linkUrl = "http://localhost:4200/verify-email/?token=" + tokenString;
-                    string body = "<p align= 'center'>Thank You for singing up for Saf-T-Child! </br> " +
-                                    "Click the link below to verify your email: </br> " +
-                                    " <a href='" + linkUrl + "'>Verify your Email</a></p>";
+                    string linkUrl = "https://saf-t-child-app.azurewebsites.net/verify-email/?token=" + tokenString;
+                    string body = emailTemplates.verifyEmailMessage(linkUrl);
                     bool success = await _messageService.SendEmail(user.Email, "Verify your email with Saf-T-Child", body);
                     if (success)
                     {
@@ -267,10 +266,8 @@ namespace API_Saf_T_Child.Controllers
 
                 if (user != null && user.Email != null)
                 {
-                    string linkUrl = "http://localhost:4200/reset-password/?token=" + tokenString;
-                    string body = "<p align= 'center'>Saf-T-Child Password Reset Request </br> " +
-                                    "Click the link below to change your password: </br> " +
-                                    " <a href='" + linkUrl + "'>Change Your Password</a></p>";
+                    string linkUrl = "https://saf-t-child-app.azurewebsites.net/reset-password/?token=" + tokenString;
+                    string body = emailTemplates.forgotPasswordMessage(linkUrl);
                     bool success = await _messageService.SendEmail(user.Email, "Saf-T-Child Password Reset Request", body);
                     if (success)
                     {
