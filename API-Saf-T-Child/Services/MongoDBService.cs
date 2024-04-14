@@ -189,15 +189,21 @@ namespace API_Saf_T_Child.Services
                 throw new Exception($"Failed to get vehicle by ID: {device.Car.Id}.", ex);
             }
 
-            // Assuming previous operations were successful
+        
             var vehicleInfo = $"{vehicle.Make},{vehicle.Model},{vehicle.Color},{vehicle.Year},{vehicle.LicensePlate}";
-            var ownerInfo = owner.PrimaryPhoneNumber.PhoneNumberValue.ToString();
-            var usersInfo = string.Join(",", users.Select(u => u.PrimaryPhoneNumber.PhoneNumberValue.ToString()));
+            var ownerPhoneNumber = owner.PrimaryPhoneNumber.PhoneNumberValue.ToString();
+            var ownerName = owner.FirstName + " " + owner.LastName;
+
+            // Get all users' phone numbers and finish with a comma
+            var usersInfo = string.Join(",", users.Select(u => u.PrimaryPhoneNumber.PhoneNumberValue.ToString())) + ",";
+            var countOfUsers = users.Count + 1; // Owner is included in the count
 
             //TODO - Get local emergency number dynamically if necessary
             var emergencyNumber = "6063363510"; // Placeholder emergency number
 
-            var monarchCoreInfo = $"{vehicleInfo},{emergencyNumber},{ownerInfo},{usersInfo}";
+            // Structure to follow for Monarch Core Information
+            // Vehicle Info: Make, Model, Color, Year, License Plate, emergencyNumber, Owner's Name, Number of Users (owner included), Owner's Phone Number, Users' Phone Numbers , 
+            var monarchCoreInfo = $"{vehicleInfo},{emergencyNumber},{ownerName}, {countOfUsers},{ownerPhoneNumber},{usersInfo}";
 
             return monarchCoreInfo ?? throw new InvalidOperationException("Failed to generate Monarch Core Information.");
         }
