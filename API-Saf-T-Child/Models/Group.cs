@@ -27,7 +27,7 @@ namespace API_Saf_T_Child.Models
             Id = id;
             Name = name;
             Role = role;
-            AcceptedInvite = false;
+            AcceptedInvite = acceptedInvite;
         }
     }
     public class Group

@@ -98,6 +98,22 @@ namespace API_Saf_T_Child.Controllers
             }
         }
 
+        [HttpPut("updateUserPassword")]
+        [Authorize]
+        public async Task<IActionResult> UpdateUserPassword(string id, string password)
+        {
+            var result = await _mongoDBService.UpdateUserPasswordAsync(id, password);
+
+            if (result)
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
         [HttpDelete("deleteUser")]
         [Authorize]
         public async Task<IActionResult> Delete(string id)
