@@ -167,10 +167,57 @@ namespace API_Saf_T_Child.Services
             return device;
         }
 
+        public async Task<Boolean> UpdateUserPasswordAsync(string id, string password)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(id));
+            }
+
+            if (string.IsNullOrEmpty(password))
+            {
+                throw new ArgumentException("Password cannot be null or empty.", nameof(password));
+            }
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+
+            var filter = Builders<User>.Filter.Eq("_id", ObjectId.Parse(id));
+            var update = Builders<User>.Update.Set("password", hashedPassword);
+
+            var result = await _usersCollection.UpdateOneAsync(filter, update);
+
+            return result.MatchedCount > 0;
+        }
+
         public async Task<List<Device>> GetDevicesByOwnerAsync(string ownerId)
         {
             var filter = Builders<Device>.Filter.Eq("deviceOwner._id", ObjectId.Parse(ownerId));
+
             var devices = await _devicesCollection.Find(filter).ToListAsync();
+
+            return devices;
+        }
+
+        public async Task<List<Device>> GetDevicesByUserAsync(string userId)
+        {
+            // Parse the user's ObjectId
+            ObjectId userObjectId = ObjectId.Parse(userId);
+
+            // Define a filter to find groups containing the user
+            var filterGroups = Builders<Group>.Filter.AnyEq("Users._id", userObjectId);
+
+            // Get the list of groups that the user belongs to
+            var groups = await _groupsCollection.Find(filterGroups).ToListAsync();
+
+            // Extract group IDs from the retrieved groups and  
+            // convert to a list of ObjectId
+            List<ObjectId> groupIds = groups.Select(g => ObjectId.Parse(g.Id)).ToList();
+
+            // Define a filter to find devices based on group IDs
+            var filterDevices = Builders<Device>.Filter.In("deviceGroup._id", groupIds);
+
+            // Get the list of devices that belong to these groups
+            var devices = await _devicesCollection.Find(filterDevices).ToListAsync();
 
             return devices;
         }

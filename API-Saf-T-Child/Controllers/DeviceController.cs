@@ -98,9 +98,23 @@ namespace API_Saf_T_Child.Controllers
 
         [HttpGet("by-owner/{id}")]
         [Authorize]
+
         public async Task<ActionResult<IEnumerable<Device>>> GetDevicesByOwner(string id)
         {
             var devices = await _mongoDBService.GetDevicesByOwnerAsync(id);
+            
+            return Ok(devices);
+        }
+
+        [HttpGet("by-user/{id}")]
+        [Authorize]
+        /// <summary>
+        /// Get all devices associated with a user.
+        /// This does not include devices that the user owns.
+        /// </summary>
+        public async Task<ActionResult<IEnumerable<Device>>> GetDevicesByUser(string id)
+        {
+            var devices = await _mongoDBService.GetDevicesByUserAsync(id);
             
             return Ok(devices);
         }
